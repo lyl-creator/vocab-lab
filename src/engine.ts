@@ -43,7 +43,7 @@ const inflected = (w: string): string[] => {
   const base = w.toLowerCase()
   const out = new Set([base])
   if (base.endsWith('y')) { const b = base.slice(0, -1); out.add(b + 'ies'); out.add(b + 'ied'); out.add(b + 'ily') }
-  if (base.endsWith('e')) { out.add(base + 'd'); out.add(base + 'r'); out.add(base + 'st') }
+  if (base.endsWith('e')) { out.add(base + 'd'); out.add(base + 'r'); out.add(base + 'st'); out.add(base.slice(0, -1) + 'ing') }
   out.add(base + 's'); out.add(base + 'es'); out.add(base + 'ed'); out.add(base + 'ing'); out.add(base + 'ly')
   const last = base[base.length - 1]
   if (/[bdgklmnprt]/.test(last)) { out.add(base + last + 'ed'); out.add(base + last + 'ing'); out.add(base + last + 'er') }

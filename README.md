@@ -31,6 +31,7 @@
 | 学习统计 | 累计测验数、综合正确率、专注时长、最近 7 天节奏、最近 100 次记录 |
 | 测评报告 | 得分、答对词数、用时、平均每词耗时、逐题回顾、分级建议 |
 | 数据备份 | 一键导出 JSON（记录 + 生词本），可换设备前先备份 |
+| 跨设备同步 | 免注册「同步码」：A 设备生成码，B 设备输入即可合并记录；后端为自建 Cloudflare Worker + D1 |
 | 响应式 | 375 / 768 / 1024 / 1440 宽度下均无横向溢出，移动端为抽屉式导航 |
 
 <p>
@@ -90,6 +91,9 @@ npm run build && node build-standalone.mjs   # 输出 vocab-lab.html
 ├── src/passages.ts         # 八篇课文原文（选词填空题库）
 ├── source/                 # 界面截图（教材原件已排除）
 ├── docs/index.html         # Pages 发布用的单文件构建产物
+├── docs/sync-config.json   # 同步服务端地址（填 Worker 地址后生效）
+├── sync-worker/            # Cloudflare Worker + D1 同步后端（可自行部署）
+├── src/sync.ts             # 同步码生成、合并策略、接口调用
 ├── build-standalone.mjs    # 打包为单文件 HTML
 ├── verify.mjs              # Playwright 端到端校验
 └── vocab-lab.html          # 单文件构建产物
@@ -118,9 +122,23 @@ git add docs && git commit -m "docs: 更新站点" && git push
 
 Vite 的 `base` 设为 `'./'`，产物在 `/vocab-lab/` 子路径下也能正确加载。
 
+## 跨设备同步（可选）
+
+站点本身是纯静态的，默认只把记录存在本机。如果要在手机和电脑之间共用，可以用「同步码」：
+
+1. 部署 `sync-worker/`（Cloudflare Workers + D1，免费额度足够），详见 [sync-worker/README.md](sync-worker/README.md)；
+2. 把 Worker 地址填进 `docs/sync-config.json`；
+3. 在「偏好设置 → 跨设备同步」点「生成同步码」，另一台设备输入同一串码即可。
+
+合并规则：测验记录按测试 id 去重（保留时间较新的一条），生词本按单词合并（错误次数取较大值、掌握状态按最近一次），所以反复同步不会把数据翻倍。
+
+**同步码等同于密码**：谁拿到码谁就能读写这份记录，请勿公开。换码即等于换一个独立空间，旧码的数据仍然保留。
+
 ## 隐私
 
-无账号、无网络请求、无统计埋点。所有记录存放在当前浏览器的 `localStorage`（键名 `vocab-lab-v1`），清理浏览器数据会丢失，建议先在"偏好设置 → 学习记录备份"导出 JSON。
+不需要账号、没有统计埋点。记录默认存放在当前浏览器的 `localStorage`（键名 `vocab-lab-v1`），清理浏览器数据会丢失，建议先在「偏好设置 → 学习记录备份」导出 JSON。
+
+开启同步后，站点只会与你自己的同步服务（Cloudflare Worker）通信，传输内容仅限测验记录与生词本；不生成同步码时不发出任何网络请求（站点资源除外）。
 
 ## 关于评估口径
 
