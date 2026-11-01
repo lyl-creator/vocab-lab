@@ -4,6 +4,8 @@
 
 一个纯前端的英语词汇抽测应用：词库来自我自己的扫描教材，按"识别 / 回忆 / 拼写 / 关联"四个角度出题，答完给出掌握度评估，错词自动进入生词本。没有账号、没有后端，学习记录只保存在当前浏览器里。
 
+**在线体验**：[lyl-creator.github.io/vocab-lab](https://lyl-creator.github.io/vocab-lab/)　·　**单文件版**：[vocab-lab.html](https://lyl-creator.github.io/vocab-lab/vocab-lab.html)（可直接下载，离线双击打开）
+
 ![桌面端首页](source/desktop.png)
 
 ## 为什么做这个
@@ -83,6 +85,7 @@ npm run build && node build-standalone.mjs   # 输出 vocab-lab.html
 │   ├── App.css             # 页面样式
 │   └── components/ui/      # shadcn/ui 组件
 ├── source/                 # 界面截图（教材原件已排除）
+├── docs/index.html         # Pages 发布用的单文件构建产物
 ├── build-standalone.mjs    # 打包为单文件 HTML
 ├── verify.mjs              # Playwright 端到端校验
 └── vocab-lab.html          # 单文件构建产物
@@ -95,6 +98,19 @@ npm run build && node build-standalone.mjs   # 输出 vocab-lab.html
 - 配对题每组最多 4 个词，**按首次配对结果**计分，配错后可继续尝试，但错词立即进入生词本；
 - 中途退出不生成报告，已产生的错词仍会保留在生词本；
 - 刷新页面不会丢失本次作答进度（进行中的测验会一并持久化）。
+
+## 部署
+
+站点发布在 **GitHub Pages**（分支发布，来源为 `main` 的 `/docs` 目录）：<https://lyl-creator.github.io/vocab-lab/>
+
+`docs/index.html` 是 `node build-standalone.mjs` 生成的自包含单文件版本（JS 与 CSS 全部内联），所以托管时不需要额外的构建服务。改完源码后重新生成并推送即可：
+
+```bash
+npm run build:standalone     # 构建并重新生成 vocab-lab.html 与 docs/index.html
+git add docs && git commit -m "docs: 更新站点" && git push
+```
+
+Vite 的 `base` 设为 `'./'`，产物在 `/vocab-lab/` 子路径下也能正确加载。
 
 ## 隐私
 
