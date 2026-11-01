@@ -35,7 +35,28 @@ export const duration = (seconds:number)=> `${Math.floor(seconds/60).toString().
 export const level = (score:number)=>score>=90?{title:'掌握扎实',text:'本次抽测表现出色。建议换用拼写模式，检验能否脱离提示主动回忆。'}:score>=75?{title:'较好掌握',text:'大部分词汇已熟悉。复习本次错题后，再用不同题型巩固薄弱环节。'}:score>=50?{title:'正在进步',text:'已经建立一定的词汇基础。建议先浏览词库，再以短测验分批练习。'}:{title:'需要巩固',text:'这些词汇仍需更多练习。建议每次学习 5–10 个词，重点复习生词本。'}
 export const storageKey='vocab-lab-v1'
 export const emptyStore:Store={history:[],notebook:[],active:null,sound:false}
-export function loadStore():Store {try{const raw=JSON.parse(localStorage.getItem(storageKey)||'null');if(raw&&Array.isArray(raw.history)&&Array.isArray(raw.notebook))return {...emptyStore,...raw}}catch{/* unavailable or invalid storage */}return {...emptyStore}}
+type AnyTest=Test&{cloze?:ClozeData}
+const repairTest=(t:AnyTest|null|undefined):Test|null=>{
+ if(!t||typeof t.id!=='string'||!Array.isArray(t.questions)||!t.questions.length)return null
+ if(t.mode==='cloze'){
+  const c=t.cloze as (ClozeData&{bank?:string[]})|undefined
+  if(!c||!Array.isArray(c.blocks)||!Array.isArray(c.blanks)||!c.blanks.length)return null
+  if(!Array.isArray(c.bank)||c.bank.length!==c.blanks.length)c.bank=c.blanks.map(b=>b.wordId)
+ }
+ if(t.mode!=='cloze'&&!Array.isArray(t.answers))t.answers=[]
+ return t
+}
+export function loadStore():Store {
+ try{
+  const raw=JSON.parse(localStorage.getItem(storageKey)||'null')
+  if(raw&&Array.isArray(raw.history)&&Array.isArray(raw.notebook)){
+   const next:Store={...emptyStore,...raw}
+   next.active=repairTest(next.active)
+   return next
+  }
+ }catch{/* unavailable or invalid storage */}
+ return {...emptyStore}
+}
 
 
 // ---------- 选词填空（文章挖空） ----------
