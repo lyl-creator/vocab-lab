@@ -5,7 +5,7 @@ export type Answer = { wordId: string; correct: boolean; given: string; seconds:
 export type Question = { words: Word[]; options: Word[] }
 export type ClozeBlank = { wordId: string; en: string; zh: string; form: string }
 export type ClozeToken = { t: 'text'; v: string } | { t: 'blank'; i: number }
-export type ClozeData = { passageId: string; title: string; source: string; blocks: ClozeToken[][]; blanks: ClozeBlank[] }
+export type ClozeData = { passageId: string; title: string; source: string; blocks: ClozeToken[][]; blanks: ClozeBlank[]; bank: string[] }
 export type Test = { id: string; mode: Mode; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[]; cloze?: ClozeData }
 export type Report = { id: string; mode: Mode; answers: Answer[]; seconds: number; date: number; unit: number; total: number; review: boolean }
 export type NotebookEntry = { wordId: string; mistakes: number; lastSeen: number; mastered: boolean }
@@ -108,6 +108,6 @@ export function createCloze(unit: number, section: string, count: number, notebo
     id: crypto.randomUUID(), mode: 'cloze', unit: passage.unit, section: passage.section, review,
     questions: [{ words: blanks.map(b => vocabulary.find(w => w.id === b.wordId)!), options: [] }],
     index: 0, answers: [], started: Date.now(), elapsed: 0, matchingFailures: [],
-    cloze: { passageId: passage.id, title: passage.title, source: passage.source, blocks, blanks },
+    cloze: { passageId: passage.id, title: passage.title, source: passage.source, blocks, blanks, bank: shuffle(blanks.map(b => b.wordId)) },
   }
 }
