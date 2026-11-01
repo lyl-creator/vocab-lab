@@ -20,3 +20,4 @@ source/page-*.png
 
 # 本地临时素材
 .tmp-*/
+_work/
