@@ -69,7 +69,7 @@
 /* ---- 选词填空：常驻词卡（词库原形） ---- */
 .cloze-bank{position:sticky;top:0;z-index:6;display:flex;flex-wrap:wrap;gap:7px;justify-content:center;padding:12px 0;margin-bottom:18px;background:var(--surface);border-bottom:1px solid var(--border)}
 .cloze-word{font-size:14.5px;line-height:1.4;padding:6px 12px;border-radius:8px;background:#f2f6e8;border:1px solid #dfe6d2;color:#3c4a36;white-space:nowrap}
-.cloze-word.used{opacity:.35;text-decoration:line-through}
+.cloze-word.used{opacity:.45;text-decoration:none;background:#eef1e6;border-color:#e4e8da;color:#8b9384}
 .cloze-word.good{background:#e2f0cf;border-color:#9db97f;opacity:1;text-decoration:none;color:#2f5320}
 .cloze-word.bad{background:#fbe4dc;border-color:#e0a08c;opacity:1;text-decoration:none;color:#8d3b28}
 @media (max-width:640px){.cloze-word{font-size:13.5px;padding:5px 10px}}
