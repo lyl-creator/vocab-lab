@@ -94,6 +94,14 @@ NEXT-SESSION-2025.md # 2025 真题转录记录（已完成）
 - `build-pages.mjs` 为每个词库/板块/练习方式预生成独立 HTML（各自 title、description、og、canonical），另有 `sitemap.xml`、`robots.txt`；
 - 未预生成的组合（例如 `/cet4/high/cloze/`）由 `docs/404.html` 兜底：页面正常渲染，但 HTTP 状态码是 404。
 
+## 6.5 云同步（可选，默认关闭）
+
+- 代码在 `src/sync.ts`：CloudBase 邮箱验证码登录 + 每个用户一条 `vocab_sync` 文档（JSON 字符串）；
+- 未在 `SYNC_CONFIG` 填入 `envId` / `clientId` 时，`syncConfigured()` 为 false，界面上完全没有同步入口；
+- SDK 不打包，登录时从 `static.cloudbase.net` 动态加载（版本写死在 `sync.ts` 的 `sdkUrl`）；
+- 冲突由用户选择：合并两边（报告按 id 去重、生词取较大错次）/ 云端覆盖本地 / 本地覆盖云端；
+- 开通步骤见 `SYNC-SETUP.md`（注册腾讯云 → 建环境 → 开邮箱登录 + QQ 邮箱 SMTP → 建 `vocab_sync` 集合「仅创建者可读写」→ 加安全域名 → 填配置）。
+
 ## 7. 构建与部署
 
 ```bash

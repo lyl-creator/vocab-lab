@@ -156,3 +156,13 @@
 .exam-chips{display:flex;gap:6px;flex-wrap:wrap}
 .daily-card>strong{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 @media (max-width:550px){.exam-group{align-items:flex-start}.exam-group>span{width:66px;padding-top:8px}.exam-chip{padding:7px 10px;font-size:12.5px}}
+
+
+/* ---- 账号与云同步 ---- */
+.sync-actions{display:flex;gap:8px;flex-shrink:0}
+.sync-panel{margin:-6px 0 22px;padding:15px 16px;background:#f5f7ee;border:1px solid var(--border);border-radius:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sync-input{flex:1;min-width:180px;border:1px solid #e3e8d8;border-radius:7px;padding:11px 12px;font-size:14px;background:#fff}
+.sync-hint{flex-basis:100%;margin:0;font-size:12.5px;color:#8b9680}
+.sync-row-actions{display:flex;align-items:center;gap:12px}
+.sync-choice{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+.sync-choice>button{justify-content:center}
