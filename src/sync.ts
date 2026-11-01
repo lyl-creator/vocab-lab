@@ -5,11 +5,14 @@ import type { NotebookEntry, Report } from './engine'
 export type SyncConfig = { url: string; anonKey: string }
 
 export const SYNC_CONFIG: SyncConfig = {
-  url: '',        // 形如 https://abcdefgh.supabase.co
-  anonKey: '',    // Supabase → Project Settings → API → anon public
+  url: 'https://uxvfnvoxhjyedahcypwf.supabase.co',        // 形如 https://abcdefgh.supabase.co
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dmZudm94aGp5ZWRhaGN5cHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1OTQ5OTMsImV4cCI6MjEwOTE3MDk5M30.Gvvuo8vqab6Gg2jTclUzbHG2lTXJSCRYwzG7Ro7j0j0',    // Supabase → Project Settings → API → anon public
 }
 
 export const syncConfigured = () => !!(SYNC_CONFIG.url && SYNC_CONFIG.anonKey)
+
+// 容错：允许填 https://xxx.supabase.co/rest/v1/ 这种地址
+const baseUrl = () => SYNC_CONFIG.url.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '')
 
 export type SyncPayload = { version: 1; updatedAt: number; history: Report[]; notebook: NotebookEntry[]; device: string }
 export type SyncAccount = { email: string; uid: string }
@@ -53,7 +56,7 @@ let clientPromise: Promise<any> | null = null
 function getClient(): Promise<any> {
   if (!syncConfigured()) return Promise.reject(new Error('云同步尚未配置'))
   if (!clientPromise) {
-    clientPromise = loadSdk().then((sdk) => sdk.createClient(SYNC_CONFIG.url, SYNC_CONFIG.anonKey, {
+    clientPromise = loadSdk().then((sdk) => sdk.createClient(baseUrl(), SYNC_CONFIG.anonKey, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
     }))
   }
