@@ -1,0 +1,19 @@
+# 依赖与构建产物
+node_modules/
+dist/
+.tools/
+
+# 本地工具与缓存
+.workbuddy-ai/
+*.local
+*.log
+
+# 编辑器 / 系统文件
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 教材扫描原件：版权材料，不随仓库分发（词库已转录到 src/vocabulary.ts）
+source/*.pdf
+source/page-*.png
