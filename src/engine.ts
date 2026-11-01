@@ -2,7 +2,7 @@ import { vocabulary, type Word } from './vocabulary'
 export type Mode = 'en-zh' | 'zh-en' | 'spelling' | 'matching'
 export type Answer = { wordId: string; correct: boolean; given: string; seconds: number }
 export type Question = { words: Word[]; options: Word[] }
-export type Test = { id: string; mode: Mode; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; review: boolean; matchingFailures: string[] }
+export type Test = { id: string; mode: Mode; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[] }
 export type Report = { id: string; mode: Mode; answers: Answer[]; seconds: number; date: number; unit: number; total: number; review: boolean }
 export type NotebookEntry = { wordId: string; mistakes: number; lastSeen: number; mastered: boolean }
 export type Store = { history: Report[]; notebook: NotebookEntry[]; active: Test | null; sound: boolean }
@@ -15,13 +15,14 @@ export const modes: { id: Mode; title: string; english: string; description: str
 export const shuffle = <T,>(arr: T[]): T[] => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a }
 export const normalize = (s:string) => s.trim().toLowerCase().replace(/\s+/g,' ')
 export const checkSpelling = (given:string, word:Word) => normalize(given)===normalize(word.en) || (word.en==='preventative' && normalize(given)==='preventive')
-export function createTest(mode:Mode, unit:number, count:number, notebook:NotebookEntry[], review=false):Test {
- let pool=vocabulary.filter(w => (!unit||w.unit===unit) && (!review||notebook.some(n=>n.wordId===w.id&&!n.mastered)))
+export function createTest(mode:Mode, unit:number, section:string, count:number, notebook:NotebookEntry[], review=false):Test {
+ let pool=vocabulary.filter(w => (!unit||w.unit===unit) && (!section||w.section===section) && (!review||notebook.some(n=>n.wordId===w.id&&!n.mastered)))
  // Ellipses and grammatical placeholders are unsuitable for exact spelling.
- if(mode==='spelling') pool=pool.filter(w=>!w.phrase&&!w.en.includes('/'))
+ const spellable=(w:Word)=>!w.en.includes('/')&&!/\b(?:sb|sth)\.|\.\.\.|\(|\)|~/.test(w.en)
+ if(mode==='spelling') pool=pool.filter(spellable)
  const chosen=shuffle(pool).slice(0,count)
  const questions:Question[]=mode==='matching'?Array.from({length:Math.ceil(chosen.length/4)},(_,i)=>{const words=chosen.slice(i*4,i*4+4);return {words,options:shuffle(words)}}):chosen.map(word=>({words:[word],options:shuffle([word,...shuffle(vocabulary.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh)).slice(0,3)])}))
- return {id:crypto.randomUUID(),mode,unit,review,questions,index:0,answers:[],started:Date.now(),elapsed:0,matchingFailures:[]}
+ return {id:crypto.randomUUID(),mode,unit,section,review,questions,index:0,answers:[],started:Date.now(),elapsed:0,matchingFailures:[]}
 }
 export function addAnswers(book:NotebookEntry[],answers:Answer[]):NotebookEntry[] {const next=book.map(n=>({...n}));for(const a of answers){if(a.correct)continue;const entry=next.find(n=>n.wordId===a.wordId);if(entry){entry.mistakes++;entry.lastSeen=Date.now();entry.mastered=false}else next.push({wordId:a.wordId,mistakes:1,lastSeen:Date.now(),mastered:false})}return next}
 export const accuracy = (answers:Answer[])=>answers.length?Math.round(answers.filter(a=>a.correct).length/answers.length*100):0
