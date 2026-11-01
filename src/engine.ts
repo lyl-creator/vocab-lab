@@ -25,8 +25,8 @@ export function createTest(mode:Mode, unit:number, section:string, count:number,
  // Ellipses and grammatical placeholders are unsuitable for exact spelling.
  const spellable=(w:Word)=>!w.en.includes('/')&&!/\b(?:sb|sth)\.|\.\.\.|\(|\)|~/.test(w.en)
  if(mode==='spelling') pool=pool.filter(spellable)
- const chosen=shuffle(pool).slice(0,count)
- const questions:Question[]=mode==='matching'?Array.from({length:Math.ceil(chosen.length/4)},(_,i)=>{const words=chosen.slice(i*4,i*4+4);return {words,options:shuffle(words)}}):chosen.map(word=>({words:[word],options:shuffle([word,...shuffle(vocabulary.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh)).slice(0,3)])}))
+ const chosen=[...shuffle(pool.filter(w=>w.starred)),...shuffle(pool.filter(w=>!w.starred))].slice(0,count)
+ const questions:Question[]=mode==='matching'?Array.from({length:Math.ceil(chosen.length/4)},(_,i)=>{const words=chosen.slice(i*4,i*4+4);return {words,options:shuffle(words)}}):chosen.map(word=>({words:[word],options:shuffle([word,...shuffle(vocabulary.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&w.starred)).slice(0,3),...shuffle(vocabulary.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&!w.starred)).slice(0,3)].slice(0,4))}))
  return {id:crypto.randomUUID(),mode,unit,section,review,questions,index:0,answers:[],started:Date.now(),elapsed:0,matchingFailures:[]}
 }
 export function addAnswers(book:NotebookEntry[],answers:Answer[]):NotebookEntry[] {const next=book.map(n=>({...n}));for(const a of answers){if(a.correct)continue;const entry=next.find(n=>n.wordId===a.wordId);if(entry){entry.mistakes++;entry.lastSeen=Date.now();entry.mastered=false}else next.push({wordId:a.wordId,mistakes:1,lastSeen:Date.now(),mastered:false})}return next}
@@ -97,7 +97,7 @@ export function createCloze(unit: number, section: string, count: number, notebo
   let pool = pick.words
   if (review) pool = pool.filter(w => notebook.some(n => n.wordId === w.id && !n.mastered))
   if (pool.length < 6) pool = pick.words
-  const chosen = shuffle(pool).slice(0, Math.min(count, pool.length))
+  const chosen = [...shuffle(pool.filter(w => w.starred)), ...shuffle(pool.filter(w => !w.starred))].slice(0, Math.min(count, pool.length))
   const found: { pi: number; start: number; end: number; word: Word }[] = []
   for (const word of chosen) {
     for (let pi = 0; pi < passage.paragraphs.length; pi++) {

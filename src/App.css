@@ -72,3 +72,8 @@
 .cloze-word.good{background:#e2f0cf;border-color:#9db97f;opacity:1;text-decoration:none;color:#2f5320}
 .cloze-word.bad{background:#fbe4dc;border-color:#e0a08c;opacity:1;text-decoration:none;color:#8d3b28}
 @media (max-width:640px){.cloze-word{font-size:13.5px;padding:5px 10px}}
+
+
+/* ---- 重点词星标 ---- */
+.star-mark{color:#d2903a;margin-right:3px;font-size:.9em;line-height:1;display:inline-block;vertical-align:.02em}
+.cloze-word .star-mark{margin-right:2px}

@@ -1,4 +1,4 @@
-export type Word = { id: string; en: string; zh: string; pos: string; unit: number; section: string; page: number; phrase: boolean }
+export type Word = { id: string; en: string; zh: string; pos: string; unit: number; section: string; page: number; phrase: boolean; starred: boolean }
 // Transcribed from the supplied scanned textbook; page denotes the PDF page, not the printed page.
 const rows: [number, number, string, string][] = [
 [1,1,'Episode 1',`straightforward|简单的；易懂的|adj.
@@ -243,7 +243,20 @@ imperative|紧迫的事；紧要之物；紧迫的；紧要的|n. / adj.
 along the lines of|类似于|phr.
 give rise to|引起（或导致）某事（尤指令人不快或出人意料的事）|phr.`]
 ]
-export const vocabulary: Word[] = rows.flatMap(([unit,page,section,text]) => text.split('\n').map((row,i) => { const [en,zh,pos] = row.split('|'); const actualSection=page===1&&['varying','respondent'].includes(en)?'Episode 2':page===2&&['athlete','medal','disappointment'].includes(en)?'Text A':page===4&&['go through','only just','come to terms with sth.'].includes(en)?'Text A':page===5&&['match ... up','thrash out'].includes(en)?'Episode 1':page===6&&['match ... up','thrash out'].includes(en)?'Episode 1':page===7&&i<10?'Episode 2':page===8&&i<13?'Text A':section; return {id:`${page}-${i}`,en,zh,pos,unit,page,section:actualSection,phrase:pos==='phr.'} }))
+// 原书单词表中带 * 号的为大学英语四级词汇（重点词）
+const STARRED = new Set<string>([
+  'straightforward','confuse','interpret','submit','criteria','breakthrough','launch','phenomenon','classify','symbol','grin','eyebrow','shed','laughter','rosy','cheek','float','approval','flame','exemplary','varying','respondent',
+  'neutral','tricky','interpretation','standardize','device','platform','perceive','exact','dimension','horn','cheat','literal','evolve','consistent','instantly','bar','transfer','expense','athlete','medal','disappointment',
+  'abuse','bully','persist','defend','civil','interaction','offensive','troll','blurry','detached','reinforcement','inflate','self','notorious','proportion','tone','preventative','guidance',
+  'switch','addicted','chat','irony','reform','addict','suck','yoga','limit','realistic','notification','alert','interruption','calm','wilderness','offline','delete','strengthen',
+  'commercial','agriculture','embrace','transparency','consumer','mobile','guarantee','organic','produce','supplement','entrepreneurial','inspire','jam','devise','chain','supplier','shelf','core','concept',
+  'infer','characteristic','gender','questionnaire','participant','administer','clarification','costly','broadly','statistical','moderator','perception','sequence','brand','openly','feedback','brilliant','tutor','review',
+  'employment','workforce','shift','disrupt','remotely','breed','opt','delivery','furthermore','favor','observer','conventional','progression',
+  'ladder','implication','predict','artificial','intelligence','towel','fraction','inevitable','populate','compete','equivalent','ultimately','automation','threaten','eliminate','redundant','characterize','predictable',
+  'repetitive','revolution','steam','transportation','urbanization','innovation','productivity','transform','dramatically','manual','conclude','imperative',
+])
+
+export const vocabulary: Word[] = rows.flatMap(([unit,page,section,text]) => text.split('\n').map((row,i) => { const [en,zh,pos] = row.split('|'); const actualSection=page===1&&['varying','respondent'].includes(en)?'Episode 2':page===2&&['athlete','medal','disappointment'].includes(en)?'Text A':page===4&&['go through','only just','come to terms with sth.'].includes(en)?'Text A':page===5&&['match ... up','thrash out'].includes(en)?'Episode 1':page===6&&['match ... up','thrash out'].includes(en)?'Episode 1':page===7&&i<10?'Episode 2':page===8&&i<13?'Text A':section; return {id:`${page}-${i}`,en,zh,pos,unit,page,section:actualSection,phrase:pos==='phr.',starred:STARRED.has(en)} }))
 export const sourceName = '扫描文件_20261101_181926.pdf'
 export const unitNames = ['全部单元', 'Unit 1 · 数字时代的连接', 'Unit 2 · 工作与技术']
 export const sectionNames = ['Episode 1', 'Episode 2', 'Text A', 'Text B']
