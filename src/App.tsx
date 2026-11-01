@@ -17,7 +17,7 @@ function ClozeCard({test,fill,onChange,onSubmit,onNext}:{test:Test;fill:Record<n
  const filled=c.blanks.filter((_,i)=>!!(fill[i]||'').trim()).length
  return <section className="quiz-card panel cloze-card">
   <div className="cloze-head"><span className="quiz-type"><span className="tiny-dot"/>选词填空</span><h2 className="cloze-title">{c.title}</h2><p className="cloze-hint">{c.source} · 共 {c.blanks.length} 空 · 词卡为词库原形，请按文章中出现的词形填写（忽略大小写）</p></div>
-  <div className="cloze-bank">{(c.bank||c.blanks.map(b=>b.wordId)).map(id=>{const idx=c.blanks.findIndex(x=>x.wordId===id);const b=c.blanks[idx];const used=!!(fill[idx]||'').trim();const a=test.answers.find(x=>x.wordId===id);return <span key={id} className={`cloze-word ${used?'used':''} ${a?(a.correct?'good':'bad'):''}`}>{b.en}</span>})}</div>
+  <div className="cloze-bank">{(c.bank||c.blanks.map(b=>b.wordId)).map(id=>{const idx=c.blanks.findIndex(x=>x.wordId===id);const b=c.blanks[idx];const a=test.answers.find(x=>x.wordId===id);return <span key={id} className={`cloze-word ${a?(a.correct?'good':'bad'):''}`}>{b.en}</span>})}</div>
   <div className="cloze-passage">{c.blocks.map((tokens,pi)=><p key={pi} className="cloze-para">{tokens.map((t,ti)=>{
    if(t.t==='text')return <span key={ti}>{t.v}</span>
    const b=c.blanks[t.i]; const a=test.answers.find(x=>x.wordId===b.wordId); const want=b.form||b.en
