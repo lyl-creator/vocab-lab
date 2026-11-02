@@ -126,3 +126,14 @@
 .seq-suggest li{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;font-size:13.5px;cursor:pointer}
 .seq-suggest li:hover{background:#f2f6e8}
 .seq-suggest small{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50%}
+
+
+/* ---- 翻译题 ---- */
+.tr-prompt{margin:6px 0 18px;padding:18px 20px;background:#f6f4ea;border:1px solid #e8e2cd;border-radius:12px;font-size:16.5px;line-height:2;color:#3d4237}
+.tr-input{width:100%;border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:15px;line-height:1.8;font-family:inherit;background:#fff;resize:vertical}
+.tr-input:disabled{background:#fafaf6;color:#4b5245}
+.tr-ref{margin-top:20px;padding:18px 20px;background:#f2f7e8;border:1px solid #dfe8cd;border-radius:12px}
+.tr-ref h3{font-size:13px;letter-spacing:1px;color:#6d7d5c;margin:0 0 8px}
+.tr-ref h3:not(:first-child){margin-top:16px}
+.tr-ref p{font-size:15px;line-height:1.95;color:#3d4237}
+.tr-tips{color:#4c5a41}

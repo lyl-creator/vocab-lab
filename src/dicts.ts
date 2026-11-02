@@ -10,7 +10,7 @@ export type DictMeta = { id: DictId; name: string; desc: string; modes: Mode[]; 
 
 export const DICTS: DictMeta[] = [
   { id: 'book', name: '课本词库', desc: '9 页扫描教材 · 241 词', modes: ['en-zh', 'zh-en', 'spelling', 'matching', 'cloze'], filter: 'section' },
-  { id: 'cet4', name: '四级词库', desc: '大纲 4428 词 · 高频 577', modes: ['en-zh', 'zh-en', 'spelling', 'matching', 'cloze'], filter: 'high' },
+  { id: 'cet4', name: '四级词库', desc: '大纲 4428 词 · 高频 577', modes: ['en-zh', 'zh-en', 'spelling', 'matching', 'cloze', 'translate'], filter: 'high' },
   { id: 'translation', name: '翻译词汇', desc: '546 条四六级翻译表达', modes: ['zh-en', 'spelling', 'matching'], filter: 'group' },
 ]
 

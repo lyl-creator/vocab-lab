@@ -1,14 +1,15 @@
 import type { Word } from './vocabulary'
 import type { Passage } from './passages'
 import type { ExamCloze } from './data/exams'
-export type Mode = 'en-zh' | 'zh-en' | 'spelling' | 'matching' | 'cloze'
+export type Mode = 'en-zh' | 'zh-en' | 'spelling' | 'matching' | 'cloze' | 'translate'
 export type Answer = { wordId: string; correct: boolean; given: string; seconds: number }
 export type Question = { words: Word[]; options: Word[] }
 export type ClozeBlank = { wordId: string; en: string; zh: string; form: string }
 export type ClozeToken = { t: 'text'; v: string } | { t: 'blank'; i: number }
 export type ClozeBankItem = { wordId: string; en: string; answer: boolean }
 export type ClozeData = { passageId: string; title: string; source: string; blocks: ClozeToken[][]; blanks: ClozeBlank[]; bank: ClozeBankItem[]; exam?: boolean }
-export type Test = { id: string; mode: Mode; seq?: boolean; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[]; cloze?: ClozeData }
+export type TranslationData = { id: string; source: string; prompt: string; ref: string; tips?: string }
+export type Test = { id: string; mode: Mode; seq?: boolean; tr?: TranslationData; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[]; cloze?: ClozeData }
 export type Report = { id: string; mode: Mode; answers: Answer[]; seconds: number; date: number; unit: number; total: number; review: boolean }
 export type NotebookEntry = { wordId: string; mistakes: number; lastSeen: number; mastered: boolean }
 export type Store = { history: Report[]; notebook: NotebookEntry[]; active: Test | null; sound: boolean }
@@ -17,7 +18,8 @@ export const modes: { id: Mode; title: string; english: string; description: str
 { id: 'zh-en',title:'中译英',english:'Recall',description:'看到中文释义，选出对应英文词汇。',tag:'主动回忆',color:'peach' },
 { id: 'spelling',title:'拼写填空',english:'Spell',description:'不依赖选项，检验你的拼写记忆。',tag:'深度掌握',color:'lavender' },
 { id: 'matching',title:'词义配对',english:'Connect',description:'连接单词与释义，让记忆形成关联。',tag:'关联记忆',color:'blue' },
-{ id: 'cloze',title:'选词填空',english:'Cloze',description:'在文章的空格中填入合适的词，检验语境理解。',tag:'语境运用',color:'mint' }
+{ id: 'cloze',title:'选词填空',english:'Cloze',description:'在文章的空格中填入合适的词，检验语境理解。',tag:'语境运用',color:'mint' },
+{ id: 'translate',title:'翻译题',english:'Translate',description:'翻译一段中文，提交后对照参考译文与点拨。',tag:'真题演练',color:'peach' }
 ]
 export const shuffle = <T,>(arr: T[]): T[] => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a }
 export const normalize = (s:string) => s.trim().toLowerCase().replace(/\s+/g,' ')
@@ -192,5 +194,17 @@ export function createExamCloze(exam: ExamCloze): Test {
     questions: [{ words, options: [] }],
     index: 0, answers: [], started: Date.now(), elapsed: 0, matchingFailures: [],
     cloze: { passageId: exam.id, title: '四级真题 · 选词填空', source: exam.source, blocks, blanks, bank, exam: true },
+  }
+}
+
+
+// ---------- 四级真题：翻译题 ----------
+export function createTranslationTest(item: { id: string; source: string; prompt: string; ref: string; tips?: string }): Test {
+  const word = { id: 'tr-' + item.id, en: item.source, zh: item.prompt.slice(0, 30) + '…', pos: '', unit: 0, section: '', page: 0, phrase: false, starred: false }
+  return {
+    id: crypto.randomUUID(), mode: 'translate', unit: 0, section: '', review: false,
+    questions: [{ words: [word], options: [] }],
+    index: 0, answers: [], started: Date.now(), elapsed: 0, matchingFailures: [],
+    tr: { id: item.id, source: item.source, prompt: item.prompt, ref: item.ref, tips: item.tips },
   }
 }
