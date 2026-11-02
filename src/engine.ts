@@ -29,7 +29,23 @@ export function createTest(mode:Mode, unit:number, section:string, count:number,
  const questions:Question[]=mode==='matching'?Array.from({length:Math.ceil(chosen.length/4)},(_,i)=>{const words=chosen.slice(i*4,i*4+4);return {words,options:shuffle(words)}}):chosen.map(word=>({words:[word],options:shuffle([word,...shuffle(vocabulary.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&w.starred)).slice(0,3),...shuffle(vocabulary.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&!w.starred)).slice(0,3)].slice(0,4))}))
  return {id:crypto.randomUUID(),mode,unit,section,review,questions,index:0,answers:[],started:Date.now(),elapsed:0,matchingFailures:[]}
 }
-export function addAnswers(book:NotebookEntry[],answers:Answer[]):NotebookEntry[] {const next=book.map(n=>({...n}));for(const a of answers){if(a.correct)continue;const entry=next.find(n=>n.wordId===a.wordId);if(entry){entry.mistakes++;entry.lastSeen=Date.now();entry.mastered=false}else next.push({wordId:a.wordId,mistakes:1,lastSeen:Date.now(),mastered:false})}return next}
+export function addAnswers(book:NotebookEntry[],answers:Answer[],review=false):NotebookEntry[] {
+ const next=book.map(n=>({...n}))
+ const remove=new Set<string>()
+ for(const a of answers){
+  const i=next.findIndex(n=>n.wordId===a.wordId)
+  if(a.correct){
+   if(!review||i<0)continue
+   next[i].mistakes=Math.max(0,(next[i].mistakes||0)-1)
+   next[i].lastSeen=Date.now()
+   if(next[i].mistakes===0)remove.add(a.wordId)
+   continue
+  }
+  if(i>=0){next[i].mistakes++;next[i].lastSeen=Date.now();next[i].mastered=false}
+  else next.push({wordId:a.wordId,mistakes:1,lastSeen:Date.now(),mastered:false})
+ }
+ return next.filter(n=>!remove.has(n.wordId))
+}
 export const accuracy = (answers:Answer[])=>answers.length?Math.round(answers.filter(a=>a.correct).length/answers.length*100):0
 export const duration = (seconds:number)=> `${Math.floor(seconds/60).toString().padStart(2,'0')}:${Math.floor(seconds%60).toString().padStart(2,'0')}`
 export const level = (score:number)=>score>=90?{title:'掌握扎实',text:'本次抽测表现出色。建议换用拼写模式，检验能否脱离提示主动回忆。'}:score>=75?{title:'较好掌握',text:'大部分词汇已熟悉。复习本次错题后，再用不同题型巩固薄弱环节。'}:score>=50?{title:'正在进步',text:'已经建立一定的词汇基础。建议先浏览词库，再以短测验分批练习。'}:{title:'需要巩固',text:'这些词汇仍需更多练习。建议每次学习 5–10 个词，重点复习生词本。'}

@@ -17,3 +17,6 @@ Thumbs.db
 # 教材扫描原件：版权材料，不随仓库分发（词库已转录到 src/vocabulary.ts）
 source/*.pdf
 source/page-*.png
+
+# 本地临时素材
+.tmp-*/

@@ -77,3 +77,29 @@
 /* ---- 重点词星标 ---- */
 .star-mark{color:#d2903a;margin-right:3px;font-size:.9em;line-height:1;display:inline-block;vertical-align:.02em}
 .cloze-word .star-mark{margin-right:2px}
+
+
+/* ---- 单词详情 / 清空记录 / 首页入口 / 选词填空对照 ---- */
+.hero-notebook{display:inline-flex;align-items:center;gap:5px;margin-left:6px}
+.word-row.clickable{cursor:pointer}
+.word-row.clickable:hover{background:#f6f8ef}
+.word-row.clickable:focus-visible{outline:2px solid #9db97f;outline-offset:-2px}
+.subtle-button.danger{color:#a4472c;border-color:#e6c3b7}
+.subtle-button.danger:hover:not(:disabled){background:#fbeee9;border-color:#cf8873}
+.detail-head{display:flex;align-items:baseline;gap:10px;margin:6px 0 14px}
+.detail-head h2{font-size:30px;font-family:Georgia,serif}
+.detail-head span{font-size:13.5px;color:var(--muted)}
+.detail-senses{margin:0 0 16px}
+.detail-source{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+.detail-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.detail-added{font-size:13px;color:#5a7a45;background:#eef4e2;border-radius:8px;padding:8px 14px}
+.cloze-answers{margin-top:22px;padding-top:16px;border-top:1px solid var(--border)}
+.cloze-answers h3{font-size:14px;color:var(--muted);font-weight:600;margin-bottom:10px}
+.cloze-answers ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 18px}
+.cloze-answers li{display:flex;align-items:center;gap:8px;font-size:14px;padding:5px 0;border-bottom:1px dashed #eceee4}
+.ans-no{width:20px;color:#9aa392;font-size:12px;text-align:right}
+.ans-given{color:var(--ink)}
+.cloze-answers li.no .ans-given{color:#b2503a;text-decoration:line-through}
+.ans-arrow{color:#b9c2ac}
+.ans-want{color:#3f6b2e;font-weight:600}
+.ans-mark{color:#4a7a35;font-weight:700}
