@@ -7,7 +7,7 @@ import { EXAM_CLOZE, EXAM_TRANSLATION } from './data/exams'
 import { createExamCloze, createTranslationTest } from './engine'
 import { modes, createTest, createCloze, clozeCapacity, addAnswers, accuracy, duration, level, loadStore, storageKey, emptyStore, checkSpelling, normalizeStore, type Mode, type Store, type Test, type Report, type Answer } from './engine'
 import { parseBackup, summarize, mergeBackup, replaceWithBackup, type Backup, type BackupSummary } from './transfer'
-import { syncConfigured, currentAccount, signIn as syncSignIn, signUp as syncSignUp, signOut as syncSignOut, pull as syncPull, push as syncPush, mergePayload, fetchProfile as syncFetchProfile, saveProfile as syncSaveProfile, changePassword as syncChangePassword, type SyncAccount, type SyncPayload } from './sync'
+import { syncConfigured, currentAccount, signIn as syncSignIn, signUp as syncSignUp, signOut as syncSignOut, pull as syncPull, push as syncPush, mergePayload, sameStore, fetchProfile as syncFetchProfile, saveProfile as syncSaveProfile, changePassword as syncChangePassword, type SyncAccount, type SyncPayload } from './sync'
 import './App.css'
 type Page = 'home' | 'words' | 'notebook' | 'history'
 const modeIcons = { 'en-zh': BookOpen, 'zh-en': RotateCcw, spelling: Keyboard, matching: Link2, cloze: Puzzle, translate: Languages }
@@ -199,12 +199,23 @@ function App(){
  const savePassword=async()=>{if(newPassword.length<6){notify('密码至少 6 位');return}try{await syncChangePassword(newPassword);setNewPassword('');notify('密码已更新')}catch(e:any){notify(e?.message||'密码更新失败')}}
  const syncDevice=typeof navigator!=='undefined'?navigator.userAgent.slice(0,80):'web'
  const syncPayload=(history:Report[],notebook:typeof store.notebook):SyncPayload=>({version:1,updatedAt:Date.now(),history,notebook,device:syncDevice})
- const pushNow=async()=>{if(!syncUser)return;await syncPush(syncUser,syncPayload(store.history,store.notebook));setSyncAt(Date.now())}
  const startLogin=()=>{setSyncOpen(true)}
- const afterLogin=async(acc:SyncAccount)=>{setSyncUser(acc);setSyncOpen(false);setSyncPassword('');setAccountOpen(true);try{const remoteProfile=await syncFetchProfile();if(remoteProfile){setProfile(remoteProfile);setNickDraft(remoteProfile.nickname)}else if(profile.nickname||profile.avatar){await syncSaveProfile(profile)}}catch{}const remote=await syncPull(acc);const hasLocal=store.history.length>0||store.notebook.length>0;if(!remote){await syncPush(acc,syncPayload(store.history,store.notebook));setSyncAt(Date.now());notify('已登录并上传本地记录')}else if(!hasLocal){setStore(s=>({...s,history:remote.history,notebook:remote.notebook}));setSyncAt(Date.now());notify('已登录并拉取云端记录')}else{setSyncConflict(remote)}}
+ const runSync=async(acc:SyncAccount,fromLogin:boolean)=>{
+  const remote=await syncPull(acc)
+  const local={history:store.history,notebook:store.notebook}
+  const hasLocal=local.history.length>0||local.notebook.length>0
+  if(!remote){await syncPush(acc,syncPayload(local.history,local.notebook));setSyncAt(Date.now());notify(fromLogin?'已登录并上传本地记录':'已上传本次记录');return}
+  if(!hasLocal){setStore(s=>({...s,history:remote.history,notebook:remote.notebook}));setSyncAt(Date.now());notify(fromLogin?'已登录并拉取云端记录':'已拉取云端记录');return}
+  if(sameStore(local,remote)){setSyncAt(Date.now());notify('本地与云端一致，无需处理');return}
+  const merged=mergePayload(local,remote)
+  if(sameStore(merged,remote)){setStore(s=>({...s,history:merged.history,notebook:merged.notebook}));setSyncAt(Date.now());notify('已拉取云端更新');return}
+  if(sameStore(merged,local)){await syncPush(acc,syncPayload(local.history,local.notebook));setSyncAt(Date.now());notify('已上传本地更新');return}
+  setSyncConflict(remote)
+ }
+ const afterLogin=async(acc:SyncAccount)=>{setSyncUser(acc);setSyncOpen(false);setSyncPassword('');setAccountOpen(true);try{const remoteProfile=await syncFetchProfile();if(remoteProfile){setProfile(remoteProfile);setNickDraft(remoteProfile.nickname)}else if(profile.nickname||profile.avatar){await syncSaveProfile(profile)}}catch{}await runSync(acc,true)}
  const doLogin=async()=>{const email=syncEmail.trim(),password=syncPassword;if(!email||!password){notify('请填写邮箱和密码');return}setSyncBusy(true);try{await afterLogin(await syncSignIn(email,password))}catch(e:any){notify(e?.message||'登录失败')}finally{setSyncBusy(false)}}
  const doRegister=async()=>{const email=syncEmail.trim(),password=syncPassword;if(!email||!password){notify('请填写邮箱和密码');return}setSyncBusy(true);try{await afterLogin(await syncSignUp(email,password))}catch(e:any){notify(e?.message||'注册失败')}finally{setSyncBusy(false)}}
- const manualSync=async()=>{if(!syncUser)return;setSyncBusy(true);try{const remote=await syncPull(syncUser);if(!remote){await pushNow();notify('已上传本次记录')}else if(!store.history.length&&!store.notebook.length){setStore(s=>({...s,history:remote.history,notebook:remote.notebook}));setSyncAt(Date.now());notify('已拉取云端记录')}else{setSyncConflict(remote)}}catch(e:any){notify(e?.message||'同步失败')}finally{setSyncBusy(false)}}
+ const manualSync=async()=>{if(!syncUser)return;setSyncBusy(true);try{await runSync(syncUser,false)}catch(e:any){notify(e?.message||'同步失败')}finally{setSyncBusy(false)}}
  const resolveConflict=async(choice:'merge'|'remote'|'local')=>{if(!syncConflict||!syncUser)return;setSyncBusy(true);try{if(choice==='remote'){setStore(s=>({...s,history:syncConflict.history,notebook:syncConflict.notebook}))}else if(choice==='local'){await syncPush(syncUser,syncPayload(store.history,store.notebook))}else{const merged=mergePayload({history:store.history,notebook:store.notebook},syncConflict);setStore(s=>({...s,...merged}));await syncPush(syncUser,syncPayload(merged.history,merged.notebook))}setSyncAt(Date.now());setSyncConflict(null);notify(choice==='merge'?'已合并两边记录':choice==='remote'?'已用云端记录覆盖本地':'已用本地记录覆盖云端')}catch(e:any){notify(e?.message||'同步失败')}finally{setSyncBusy(false)}}
  const doSignOut=async()=>{try{await syncSignOut()}catch{}setSyncUser(null);setSyncOpen(false);setSyncAt(null);notify('已退出登录')}
  useEffect(()=>{if(!syncConfigured())return;let alive=true;currentAccount().then(async acc=>{if(!alive||!acc)return;setSyncUser(acc);try{const p=await syncFetchProfile();if(alive&&p){setProfile(p);setNickDraft(p.nickname)}}catch{}}).catch(()=>{});return()=>{alive=false}},[])

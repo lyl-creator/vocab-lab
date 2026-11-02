@@ -161,6 +161,24 @@ export async function push(account: SyncAccount, payload: SyncPayload): Promise<
   if (error) throw new Error(humanize(error.message))
 }
 
+// 内容是否等价（用于判断"两边一样就不用弹冲突"）
+export function sameStore(a: { history: Report[]; notebook: NotebookEntry[] }, b: { history: Report[]; notebook: NotebookEntry[] }): boolean {
+  if (a.history.length !== b.history.length || a.notebook.length !== b.notebook.length) return false
+  const ha = [...a.history].sort((x, y) => x.id.localeCompare(y.id))
+  const hb = [...b.history].sort((x, y) => x.id.localeCompare(y.id))
+  for (let i = 0; i < ha.length; i++) {
+    if (ha[i].id !== hb[i].id || (ha[i].date || 0) !== (hb[i].date || 0)) return false
+  }
+  const na = [...a.notebook].sort((x, y) => x.wordId.localeCompare(y.wordId))
+  const nb = [...b.notebook].sort((x, y) => x.wordId.localeCompare(y.wordId))
+  for (let i = 0; i < na.length; i++) {
+    if (na[i].wordId !== nb[i].wordId) return false
+    if ((na[i].mistakes || 0) !== (nb[i].mistakes || 0)) return false
+    if (!!na[i].mastered !== !!nb[i].mastered) return false
+  }
+  return true
+}
+
 // 合并：报告按 id 去重取较新，生词按 wordId 取较大错次、已掌握取或
 export function mergePayload(local: { history: Report[]; notebook: NotebookEntry[] }, remote: { history: Report[]; notebook: NotebookEntry[] }) {
   const history = new Map<string, Report>()
