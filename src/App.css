@@ -362,8 +362,23 @@ img,svg{max-width:100%}
 
 /* 设置弹窗：练习方式固定列数，滚动条出现时也不再换行 */
 .modal{scrollbar-gutter:stable}
-.setup-modes{grid-template-columns:repeat(4,1fr)}
+.setup-modes{grid-template-columns:repeat(3,1fr)}
 .count-options{grid-template-columns:repeat(4,1fr)}
 @media (max-width:480px){
   .setup-modes{grid-template-columns:repeat(3,1fr)}
+}
+
+.quiz-next-card:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+
+
+/* 小屏弹窗：压缩间距，让主按钮在首屏可见 */
+@media (max-width:550px){
+  .modal{padding:22px 20px}
+  .modal-icon{width:40px;height:40px;margin-bottom:12px}
+  .modal h2{font-size:21px;margin-bottom:8px}
+  .modal>p{margin-bottom:14px}
+  .modal>label{margin:14px 0 8px}
+  .setup-note{padding:11px 12px;margin:14px 0 12px}
+  .full-button{padding:12px}
+  .modal-caption{margin-top:10px}
 }
