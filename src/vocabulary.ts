@@ -1,4 +1,4 @@
-export type Word = { id: string; en: string; zh: string; pos: string; unit: number; section: string; page: number; phrase: boolean; starred: boolean }
+export type Word = { id: string; en: string; zh: string; pos: string; unit: number; section: string; page: number; phrase: boolean; starred: boolean; ipa?: string; high?: boolean }
 // Transcribed from the supplied scanned textbook; page denotes the PDF page, not the printed page.
 const rows: [number, number, string, string][] = [
 [1,1,'Episode 1',`straightforward|简单的；易懂的|adj.

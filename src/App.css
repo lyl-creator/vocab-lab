@@ -103,3 +103,14 @@
 .ans-arrow{color:#b9c2ac}
 .ans-want{color:#3f6b2e;font-weight:600}
 .ans-mark{color:#4a7a35;font-weight:700}
+
+
+/* ---- 多词库 / 顺序练习 ---- */
+.dict-switch{margin:22px 6px 0}
+.dict-switch select{width:100%;border:1px solid var(--border);border-radius:8px;background:#fff;padding:9px 10px;font-size:13.5px;color:var(--ink)}
+.dict-switch small{display:block;margin-top:7px;font-size:11.5px;color:#949c8b}
+.high-toggle{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink);background:#fff;border:1px solid var(--border);border-radius:8px;padding:9px 14px;cursor:pointer}
+.high-toggle input{accent-color:#6f8f4f;width:15px;height:15px}
+.seq-button{margin-left:2px}
+.seq-note{margin-bottom:14px}
+@media (max-width:960px){.dict-switch{margin-top:16px}}

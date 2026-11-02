@@ -1,11 +1,12 @@
-import { vocabulary, type Word } from './vocabulary'
-import { passagesOf, type Passage } from './passages'
+import type { Word } from './vocabulary'
+import type { Passage } from './passages'
 export type Mode = 'en-zh' | 'zh-en' | 'spelling' | 'matching' | 'cloze'
 export type Answer = { wordId: string; correct: boolean; given: string; seconds: number }
 export type Question = { words: Word[]; options: Word[] }
 export type ClozeBlank = { wordId: string; en: string; zh: string; form: string }
 export type ClozeToken = { t: 'text'; v: string } | { t: 'blank'; i: number }
-export type ClozeData = { passageId: string; title: string; source: string; blocks: ClozeToken[][]; blanks: ClozeBlank[]; bank: string[] }
+export type ClozeBankItem = { wordId: string; en: string; answer: boolean }
+export type ClozeData = { passageId: string; title: string; source: string; blocks: ClozeToken[][]; blanks: ClozeBlank[]; bank: ClozeBankItem[] }
 export type Test = { id: string; mode: Mode; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[]; cloze?: ClozeData }
 export type Report = { id: string; mode: Mode; answers: Answer[]; seconds: number; date: number; unit: number; total: number; review: boolean }
 export type NotebookEntry = { wordId: string; mistakes: number; lastSeen: number; mastered: boolean }
@@ -20,14 +21,14 @@ export const modes: { id: Mode; title: string; english: string; description: str
 export const shuffle = <T,>(arr: T[]): T[] => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a }
 export const normalize = (s:string) => s.trim().toLowerCase().replace(/\s+/g,' ')
 export const checkSpelling = (given:string, word:Word) => normalize(given)===normalize(word.en) || (word.en==='preventative' && normalize(given)==='preventive')
-export function createTest(mode:Mode, unit:number, section:string, count:number, notebook:NotebookEntry[], review=false):Test {
- let pool=vocabulary.filter(w => (!unit||w.unit===unit) && (!section||w.section===section) && (!review||notebook.some(n=>n.wordId===w.id&&!n.mastered)))
+export function createTest(mode:Mode, source:Word[], count:number, notebook:NotebookEntry[], review=false, ordered=false):Test {
+ let pool=source.filter(w => (!review||notebook.some(n=>n.wordId===w.id&&!n.mastered)))
  // Ellipses and grammatical placeholders are unsuitable for exact spelling.
  const spellable=(w:Word)=>!w.en.includes('/')&&!/\b(?:sb|sth)\.|\.\.\.|\(|\)|~/.test(w.en)
  if(mode==='spelling') pool=pool.filter(spellable)
- const chosen=[...shuffle(pool.filter(w=>w.starred)),...shuffle(pool.filter(w=>!w.starred))].slice(0,count)
- const questions:Question[]=mode==='matching'?Array.from({length:Math.ceil(chosen.length/4)},(_,i)=>{const words=chosen.slice(i*4,i*4+4);return {words,options:shuffle(words)}}):chosen.map(word=>({words:[word],options:shuffle([word,...shuffle(vocabulary.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&w.starred)).slice(0,3),...shuffle(vocabulary.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&!w.starred)).slice(0,3)].slice(0,4))}))
- return {id:crypto.randomUUID(),mode,unit,section,review,questions,index:0,answers:[],started:Date.now(),elapsed:0,matchingFailures:[]}
+ const chosen=ordered?pool.slice(0,count):[...shuffle(pool.filter(w=>w.starred)),...shuffle(pool.filter(w=>!w.starred))].slice(0,count)
+ const questions:Question[]=mode==='matching'?Array.from({length:Math.ceil(chosen.length/4)},(_,i)=>{const words=chosen.slice(i*4,i*4+4);return {words,options:shuffle(words)}}):chosen.map(word=>({words:[word],options:shuffle([word,...shuffle(pool.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&w.starred)).slice(0,3),...shuffle(pool.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&!w.starred)).slice(0,3)].slice(0,4))}))
+ return {id:crypto.randomUUID(),mode,unit:chosen[0]?.unit||0,section:chosen[0]?.section||'',review,questions,index:0,answers:[],started:Date.now(),elapsed:0,matchingFailures:[]}
 }
 export function addAnswers(book:NotebookEntry[],answers:Answer[],review=false):NotebookEntry[] {
  const next=book.map(n=>({...n}))
@@ -55,9 +56,9 @@ type AnyTest=Test&{cloze?:ClozeData}
 const repairTest=(t:AnyTest|null|undefined):Test|null=>{
  if(!t||typeof t.id!=='string'||!Array.isArray(t.questions)||!t.questions.length)return null
  if(t.mode==='cloze'){
-  const c=t.cloze as (ClozeData&{bank?:string[]})|undefined
+  const c=t.cloze as (ClozeData&{bank?:ClozeBankItem[]})|undefined
   if(!c||!Array.isArray(c.blocks)||!Array.isArray(c.blanks)||!c.blanks.length)return null
-  if(!Array.isArray(c.bank)||c.bank.length!==c.blanks.length)c.bank=c.blanks.map(b=>b.wordId)
+  if(!Array.isArray(c.bank)||c.bank.length!==c.blanks.length)c.bank=c.blanks.map(b=>({wordId:b.wordId,en:b.en,answer:true}))
  }
  if(t.mode!=='cloze'&&!Array.isArray(t.answers))t.answers=[]
  return t
@@ -93,20 +94,20 @@ const matchWord = (text: string, word: string): [number, number] | null => {
   const m = re.exec(text)
   return m ? [m.index, m.index + m[0].length] : null
 }
-export function clozeMatches(unit: number, section: string) {
+export function clozeMatches(source: Word[], passageList: Passage[]) {
   const result: { passage: Passage; words: Word[] }[] = []
-  for (const passage of passagesOf(unit, section)) {
+  for (const passage of passageList) {
     const text = passage.paragraphs.join('\n')
-    const words = vocabulary.filter(w => w.unit === passage.unit && w.section === passage.section && !w.phrase && matchWord(text, w.en))
+    const words = source.filter(w => w.unit === passage.unit && w.section === passage.section && !w.phrase && matchWord(text, w.en))
     result.push({ passage, words })
   }
   return result
 }
-export const clozeCapacity = (unit: number, section: string) =>
-  clozeMatches(unit, section).reduce((max, item) => Math.max(max, item.words.length), 0)
+export const clozeCapacity = (source: Word[], passageList: Passage[]) =>
+  clozeMatches(source, passageList).reduce((max, item) => Math.max(max, item.words.length), 0)
 
-export function createCloze(unit: number, section: string, count: number, notebook: NotebookEntry[], review = false): Test | null {
-  const candidates = clozeMatches(unit, section).filter(item => item.words.length >= Math.min(count, 6))
+export function createCloze(source: Word[], passageList: Passage[], count: number, notebook: NotebookEntry[], review = false): Test | null {
+  const candidates = clozeMatches(source, passageList).filter(item => item.words.length >= Math.min(count, 6))
   if (!candidates.length) return null
   const pick = candidates[Math.floor(Math.random() * candidates.length)]
   const passage = pick.passage
@@ -143,8 +144,18 @@ export function createCloze(unit: number, section: string, count: number, notebo
   if (!blanks.length) return null
   return {
     id: crypto.randomUUID(), mode: 'cloze', unit: passage.unit, section: passage.section, review,
-    questions: [{ words: blanks.map(b => vocabulary.find(w => w.id === b.wordId)!), options: [] }],
+    questions: [{ words: blanks.map(b => source.find(w => w.id === b.wordId)!), options: [] }],
     index: 0, answers: [], started: Date.now(), elapsed: 0, matchingFailures: [],
-    cloze: { passageId: passage.id, title: passage.title, source: passage.source, blocks, blanks, bank: shuffle(blanks.map(b => b.wordId)) },
+    cloze: (() => {
+      const answerIds = new Set(blanks.map(b => b.wordId))
+      const local = source.filter(w => w.unit === passage.unit && w.section === passage.section && !w.phrase && !answerIds.has(w.id))
+      const fallback = source.filter(w => !w.phrase && !answerIds.has(w.id) && !local.some(l => l.id === w.id))
+      const extra = [...shuffle(local), ...shuffle(fallback)].slice(0, Math.max(0, 15 - blanks.length))
+      const bank: ClozeBankItem[] = [
+        ...blanks.map(b => ({ wordId: b.wordId, en: b.en, answer: true })),
+        ...extra.map(w => ({ wordId: w.id, en: w.en, answer: false })),
+      ]
+      return { passageId: passage.id, title: passage.title, source: passage.source, blocks, blanks, bank: shuffle(bank) }
+    })(),
   }
 }
