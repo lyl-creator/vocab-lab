@@ -326,3 +326,26 @@ img,svg{max-width:100%}
 .guide ul.guide-list{list-style:disc}
 .guide ol.guide-list{list-style:decimal}
 .guide-list li::marker{color:#9db97f}
+
+
+/* 答题页：顶部「下一题」与标题行自适应 */
+.quiz-header{flex-wrap:nowrap}
+.quiz-header>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.quiz-header>.text-link,.quiz-header>.subtle-button,.quiz-header>.quiz-next{flex-shrink:0}
+.quiz-next{gap:8px;padding:9px 13px;font-size:13.5px;min-height:38px}
+@media (max-width:640px){
+  .quiz-header{gap:8px}
+  .quiz-next{padding:8px 11px;font-size:13px;gap:6px;min-height:36px}
+  .quiz-header>span{font-size:12.5px}
+}
+
+/* 词库列表：窄屏把「顺序练习」放到单词前面，避免与朗读重叠 */
+@media (max-width:550px){
+  .word-row{grid-template-columns:26px 1fr 30px;grid-template-areas:"seq word speak" "zh zh zh" "org org org";gap:6px 8px;padding:14px 15px}
+  .word-row>.seq-button{grid-area:seq;align-self:start;justify-self:start;margin:2px 0 0 0}
+  .word-en{grid-area:word;grid-column:2;grid-row:1}
+  .word-row>span:nth-child(2){grid-area:zh;grid-column:1/-1}
+  .word-origin{grid-area:org;grid-column:1/-1}
+  .word-row>button:not(.seq-button){grid-area:speak;grid-column:3;grid-row:1;align-self:start}
+  .word-row>.seq-button svg{width:14px;height:14px}
+}
