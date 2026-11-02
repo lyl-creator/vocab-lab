@@ -358,3 +358,12 @@ img,svg{max-width:100%}
   .quiz-next-card{top:12px;right:12px;padding:7px 10px;font-size:12.5px;gap:5px;min-height:34px}
   .quiz-card .quiz-type{max-width:calc(100% - 116px)}
 }
+
+
+/* 设置弹窗：练习方式固定列数，滚动条出现时也不再换行 */
+.modal{scrollbar-gutter:stable}
+.setup-modes{grid-template-columns:repeat(4,1fr)}
+.count-options{grid-template-columns:repeat(4,1fr)}
+@media (max-width:480px){
+  .setup-modes{grid-template-columns:repeat(3,1fr)}
+}
