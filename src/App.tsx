@@ -136,7 +136,7 @@ function App(){
   navPush.current=false
   document.title=routeTitle()
  },[page,dictId,filter,section,group,highOnly,setup?.mode,examPick])
- useEffect(()=>{localStorage.setItem('vocab-lab-dict',dictId)},[dictId])
+ useEffect(()=>{try{localStorage.setItem('vocab-lab-dict',dictId)}catch{}},[dictId])
  const [tick,setTick]=useState(0); const [paused,setPaused]=useState(false)
  const [input,setInput]=useState(''); const [answer,setAnswer]=useState<Answer|null>(null)
  const [clozeFill,setClozeFill]=useState<Record<number,string>>({})
@@ -147,7 +147,21 @@ function App(){
  const inputRef=useRef<HTMLInputElement>(null); const answerLock=useRef(false)
  const test=store.active; const q=test?.questions[test.index]; const questionStarted=useRef(Date.now()); const elapsed=test?.elapsed||0
  const notify=(message:string)=>{setToast(message);window.setTimeout(()=>setToast(''),3500)}
- useEffect(()=>{try{localStorage.setItem(storageKey,JSON.stringify(store));setStorageError(false)}catch{setStorageError(true)}},[store])
+ useEffect(()=>{
+  const write=(s:Store)=>{localStorage.setItem(storageKey,JSON.stringify(s))}
+  try{write(store);setStorageError(false);return}catch{}
+  const tries:Store[]=[
+    {...store,history:store.history.slice(0,20),notebook:store.notebook.filter(n=>!n.mastered)},
+    {...store,history:store.history.slice(0,5),notebook:store.notebook.filter(n=>!n.mastered)},
+    {...store,history:store.history.slice(0,1),notebook:[],active:null},
+  ]
+  for(const c of tries){
+    try{write(c);setStorageError(false);setStore(c);notify('本地存储已满，已自动清理最旧的记录');return}catch{}
+  }
+  setStorageError(true);notify('本地存储已满，本次记录未能保存，请先导出备份')
+},[store])
+// 请求持久化存储，降低浏览器回收概率
+useEffect(()=>{const s=navigator.storage as StorageManager|undefined;if(s&&'persist'in s){s.persist?.().catch(()=>{})}},[])
 
  useEffect(()=>{if(!test||paused)return;const timer=window.setInterval(()=>{setStore(s=>s.active?{...s,active:{...s.active,elapsed:s.active.elapsed+1}}:s);setTick(t=>t+1)},1000);return()=>clearInterval(timer)},[!!test,paused])
  useEffect(()=>{const current=test?.questions[test.index];const saved=test?.answers.filter(a=>current?.words.some(w=>w.id===a.wordId))||[];const restored=test?.mode!=='matching'?(saved[0]||null):null;answerLock.current=!!restored;setInput(restored&&test?.mode==='spelling'?restored.given:'');setAnswer(restored);setLeft(null);setMatched(saved.map(a=>a.wordId));setFailed([...new Set([...(test?.matchingFailures||[]).filter(id=>current?.words.some(w=>w.id===id)),...saved.filter(a=>!a.correct).map(a=>a.wordId)])]);setPairError(null);questionStarted.current=Date.now();if(test?.mode==='spelling')inputRef.current?.focus()},[test?.id,test?.index])
