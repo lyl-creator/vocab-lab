@@ -349,3 +349,12 @@ img,svg{max-width:100%}
   .word-row>button:not(.seq-button){grid-area:speak;grid-column:3;grid-row:1;align-self:start}
   .word-row>.seq-button svg{width:14px;height:14px}
 }
+
+
+/* 答题卡右上角的「下一题」 */
+.quiz-card{position:relative}
+.quiz-next-card{position:absolute;top:16px;right:18px;z-index:3;padding:8px 12px;font-size:13px;gap:6px;min-height:36px;box-shadow:0 2px 8px #52643412}
+@media (max-width:640px){
+  .quiz-next-card{top:12px;right:12px;padding:7px 10px;font-size:12.5px;gap:5px;min-height:34px}
+  .quiz-card .quiz-type{max-width:calc(100% - 116px)}
+}
