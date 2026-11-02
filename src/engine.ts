@@ -8,7 +8,7 @@ export type ClozeBlank = { wordId: string; en: string; zh: string; form: string 
 export type ClozeToken = { t: 'text'; v: string } | { t: 'blank'; i: number }
 export type ClozeBankItem = { wordId: string; en: string; answer: boolean }
 export type ClozeData = { passageId: string; title: string; source: string; blocks: ClozeToken[][]; blanks: ClozeBlank[]; bank: ClozeBankItem[]; exam?: boolean }
-export type Test = { id: string; mode: Mode; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[]; cloze?: ClozeData }
+export type Test = { id: string; mode: Mode; seq?: boolean; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[]; cloze?: ClozeData }
 export type Report = { id: string; mode: Mode; answers: Answer[]; seconds: number; date: number; unit: number; total: number; review: boolean }
 export type NotebookEntry = { wordId: string; mistakes: number; lastSeen: number; mastered: boolean }
 export type Store = { history: Report[]; notebook: NotebookEntry[]; active: Test | null; sound: boolean }
@@ -29,7 +29,7 @@ export function createTest(mode:Mode, source:Word[], count:number, notebook:Note
  if(mode==='spelling') pool=pool.filter(spellable)
  const chosen=ordered?pool.slice(0,count):[...shuffle(pool.filter(w=>w.starred)),...shuffle(pool.filter(w=>!w.starred))].slice(0,count)
  const questions:Question[]=mode==='matching'?Array.from({length:Math.ceil(chosen.length/4)},(_,i)=>{const words=chosen.slice(i*4,i*4+4);return {words,options:shuffle(words)}}):chosen.map(word=>({words:[word],options:shuffle([word,...shuffle(pool.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&w.starred)).slice(0,3),...shuffle(pool.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&!w.starred)).slice(0,3)].slice(0,4))}))
- return {id:crypto.randomUUID(),mode,unit:chosen[0]?.unit||0,section:chosen[0]?.section||'',review,questions,index:0,answers:[],started:Date.now(),elapsed:0,matchingFailures:[]}
+ return {id:crypto.randomUUID(),mode,seq:ordered,unit:chosen[0]?.unit||0,section:chosen[0]?.section||'',review,questions,index:0,answers:[],started:Date.now(),elapsed:0,matchingFailures:[]}
 }
 export function addAnswers(book:NotebookEntry[],answers:Answer[],review=false):NotebookEntry[] {
  const next=book.map(n=>({...n}))

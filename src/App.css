@@ -114,3 +114,15 @@
 .seq-button{margin-left:2px}
 .seq-note{margin-bottom:14px}
 @media (max-width:960px){.dict-switch{margin-top:16px}}
+
+
+/* ---- 顺序练习范围 ---- */
+.seq-range{margin:6px 0 14px;padding:14px 16px;background:#f5f7ee;border:1px solid var(--border);border-radius:10px}
+.seq-row{display:flex;align-items:center;gap:10px;padding:5px 0}
+.seq-row>span{width:42px;font-size:12.5px;color:var(--muted)}
+.seq-row>strong{font-size:15px;font-family:Georgia,serif}
+.seq-row input{flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:14px;background:#fff}
+.seq-suggest{list-style:none;margin:6px 0 0;padding:0;border:1px solid var(--border);border-radius:8px;background:#fff;overflow:hidden}
+.seq-suggest li{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;font-size:13.5px;cursor:pointer}
+.seq-suggest li:hover{background:#f2f6e8}
+.seq-suggest small{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50%}

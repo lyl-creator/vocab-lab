@@ -14,8 +14,14 @@ export const DICTS: DictMeta[] = [
   { id: 'translation', name: '翻译词汇', desc: '546 条四六级翻译表达', modes: ['zh-en', 'spelling', 'matching'], filter: 'group' },
 ]
 
+const tidyZh = (zh: string) => zh
+  .replace(/([\u4e00-\u9fff）)])\s*((?:adj|adv|prep|pron|conj|num|art|int|vt|vi|n|v|a)\.)/g, '$1；$2')
+  .replace(/；\s*；/g, '；')
+  .replace(/\s+/g, ' ')
+  .trim()
+
 const cet4Words: Word[] = CET4_WORDS.map((e, i) => ({
-  id: 'c' + i, en: e.en, zh: e.zh, pos: '', unit: 0, section: '', page: 0,
+  id: 'c' + i, en: e.en, zh: tidyZh(e.zh), pos: '', unit: 0, section: '', page: 0,
   phrase: false, starred: e.high, ipa: e.ipa, high: e.high,
 }))
 
