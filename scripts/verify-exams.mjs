@@ -9,13 +9,13 @@ const { EXAM_CLOZE, EXAM_TRANSLATION } = await import('../src/data/exams.ts')
 const cl = await import('../src/data/exams.ts')
 
 assert.equal(EXAM_CLOZE.length, 12, 'cloze count')
-assert.equal(EXAM_TRANSLATION.length, 12, 'translation count')
+assert.equal(EXAM_TRANSLATION.length, 15, 'translation count')
 
 const ids = EXAM_CLOZE.map(e => e.id)
 assert.equal(new Set(ids).size, ids.length, 'unique cloze ids')
 const tids = EXAM_TRANSLATION.map(e => e.id)
 assert.equal(new Set(tids).size, tids.length, 'unique translation ids')
-assert.deepEqual(ids, tids, 'id sets match across both tables')
+assert.ok(ids.every((id) => tids.includes(id)), 'cloze ids covered by translation table')
 
 const noise = [/fbr\b/, /\bo f\b/, /\bifs\b/, /\b0 \)/, /\bTn\b/, /tem pered/, /m ight/, /remem ber/, /\bAlzheimer5s/, /parfs/, /  \./]
 const report = []
@@ -45,7 +45,14 @@ for (const e of EXAM_CLOZE) {
 for (const tr of EXAM_TRANSLATION) {
   assert.ok(tr.prompt.length > 60, tr.id + ' prompt')
   assert.ok(tr.ref.length > 200, tr.id + ' ref')
-  if (tr.id.startsWith('2025')) assert.ok(tr.tips && tr.tips.length > 100, tr.id + ' tips')
+  const expectLabel = tr.id.startsWith('2026') ? '翻译点拨' : tr.id.startsWith('2025') ? '译点精析' : tr.id.startsWith('2024-12') ? '难点注释' : ''
+  if (expectLabel) {
+    assert.ok(tr.tips && tr.tips.length > 300, tr.id + ' tips')
+    assert.equal(tr.tipsLabel, expectLabel, tr.id + ' tipsLabel')
+    assert.ok(!/[\u4e00-\u9fa5]{2,}[,;]/.test(tr.ref), tr.id + ' ref clean')
+  } else {
+    assert.ok(!tr.tips && !tr.tipsLabel, tr.id + ' 2024.06 keeps no tips')
+  }
   assert.ok(/[\u4e00-\u9fa5]/.test(tr.prompt), tr.id + ' chinese prompt')
   assert.ok(!/[\u4e00-\u9fa5]/.test(tr.ref), tr.id + ' english ref only')
   assert.ok(!/ {2,}/.test(tr.prompt.replace(/\(\w/g, '(')), tr.id + ' prompt spacing')

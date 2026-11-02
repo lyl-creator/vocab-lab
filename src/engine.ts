@@ -8,7 +8,7 @@ export type ClozeBlank = { wordId: string; en: string; zh: string; form: string 
 export type ClozeToken = { t: 'text'; v: string } | { t: 'blank'; i: number }
 export type ClozeBankItem = { wordId: string; en: string; answer: boolean }
 export type ClozeData = { passageId: string; title: string; source: string; blocks: ClozeToken[][]; blanks: ClozeBlank[]; bank: ClozeBankItem[]; exam?: boolean }
-export type TranslationData = { id: string; source: string; prompt: string; ref: string; tips?: string }
+export type TranslationData = { id: string; source: string; prompt: string; ref: string; tips?: string; tipsLabel?: string }
 export type Test = { id: string; mode: Mode; seq?: boolean; tr?: TranslationData; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[]; cloze?: ClozeData }
 export type Report = { id: string; mode: Mode; answers: Answer[]; seconds: number; date: number; unit: number; total: number; review: boolean }
 export type NotebookEntry = { wordId: string; mistakes: number; lastSeen: number; mastered: boolean }
@@ -199,12 +199,12 @@ export function createExamCloze(exam: ExamCloze): Test {
 
 
 // ---------- 四级真题：翻译题 ----------
-export function createTranslationTest(item: { id: string; source: string; prompt: string; ref: string; tips?: string }): Test {
+export function createTranslationTest(item: { id: string; source: string; prompt: string; ref: string; tips?: string; tipsLabel?: string }): Test {
   const word = { id: 'tr-' + item.id, en: item.source, zh: item.prompt.slice(0, 30) + '…', pos: '', unit: 0, section: '', page: 0, phrase: false, starred: false }
   return {
     id: crypto.randomUUID(), mode: 'translate', unit: 0, section: '', review: false,
     questions: [{ words: [word], options: [] }],
     index: 0, answers: [], started: Date.now(), elapsed: 0, matchingFailures: [],
-    tr: { id: item.id, source: item.source, prompt: item.prompt, ref: item.ref, tips: item.tips },
+    tr: { id: item.id, source: item.source, prompt: item.prompt, ref: item.ref, tips: item.tips, tipsLabel: item.tipsLabel },
   }
 }

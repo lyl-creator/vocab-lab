@@ -142,7 +142,7 @@
 .tr-ref h3{font-size:13px;letter-spacing:1px;color:#6d7d5c;margin:0 0 8px}
 .tr-ref h3:not(:first-child){margin-top:16px}
 .tr-ref p{font-size:15px;line-height:1.95;color:#3d4237}
-.tr-tips{color:#4c5a41}
+.tr-tips{color:#4c5a41;white-space:pre-line}
 
 
 /* ---- 真题套次选择 ---- */
