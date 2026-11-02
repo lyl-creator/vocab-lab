@@ -96,11 +96,12 @@ NEXT-SESSION-2025.md # 2025 真题转录记录（已完成）
 
 ## 6.5 云同步（可选，默认关闭）
 
-- 代码在 `src/sync.ts`：CloudBase 邮箱验证码登录 + 每个用户一条 `vocab_sync` 文档（JSON 字符串）；
-- 未在 `SYNC_CONFIG` 填入 `envId` / `clientId` 时，`syncConfigured()` 为 false，界面上完全没有同步入口；
-- SDK 不打包，登录时从 `static.cloudbase.net` 动态加载（版本写死在 `sync.ts` 的 `sdkUrl`）；
+- 代码在 `src/sync.ts`：Supabase 邮箱 + 密码登录，每个用户一行 `vocab_sync`（`user_id` + `payload jsonb`）；
+- 未在 `SYNC_CONFIG` 填入 `url` / `anonKey` 时 `syncConfigured()` 为 false，界面上完全没有同步入口；
+- SDK 不打包，登录时从 unpkg 动态加载（失败回退 jsDelivr），版本锁在 `sync.ts` 的 `SDK_URLS`；
 - 冲突由用户选择：合并两边（报告按 id 去重、生词取较大错次）/ 云端覆盖本地 / 本地覆盖云端；
-- 开通步骤见 `SYNC-SETUP.md`（注册腾讯云 → 建环境 → 开邮箱登录 + QQ 邮箱 SMTP → 建 `vocab_sync` 集合「仅创建者可读写」→ 加安全域名 → 填配置）。
+- 安全依赖 Supabase RLS（三条策略：只能读写 `auth.uid() = user_id` 的行）；
+- 开通步骤见 `SYNC-SETUP.md`（建项目 → 开邮箱登录 → 执行建表 SQL → 填 url/anonKey）。
 
 ## 7. 构建与部署
 

@@ -1,85 +1,95 @@
-# 云同步开通指南（腾讯云开发 CloudBase · 邮箱验证码登录）
+# 云同步开通指南（Supabase · 邮箱 + 密码）
 
-代码已经写好了，但**在填好两个配置之前，界面上不会出现任何同步入口**（相当于没这个功能）。
-按下面的步骤开通后，把 `envId` / `clientId` 填进 `src/sync.ts`，重新构建部署就会自动生效。
+代码已写好，但**没填 `url` / `anonKey` 之前，界面上不会出现任何同步入口**。
+按下面四步开通，把两个值填进 `src/sync.ts`，重新构建部署即可生效。
 
 ---
 
-## 一、注册与开通（约 10 分钟）
+## 一、建项目（约 5 分钟）
 
-1. 打开 <https://cloud.tencent.com/> 注册账号，完成**实名认证**（个人认证即可）。
-2. 进入 **云开发 CloudBase 控制台** <https://tcb.cloud.tencent.com/>，点「新建环境」：
-   - 环境名称随意（如 `vocab-lab`）；
-   - 地域选 **上海**（本项目默认 `ap-shanghai`，手机号登录也只在上海支持；邮箱登录不受影响，但保持上海最省事）；
-   - 计费方式选**按量计费**（有免费额度，个人用量远低于额度）。
-3. 创建完成后，在环境首页复制两样东西：
-   - **环境 ID**：形如 `vocab-lab-1g2h3i4j`
-   - **clientId**：在「环境 → 应用配置 / 身份认证」里，形如 `xxxxx-xxxxx`
+1. 打开 <https://supabase.com> 注册（GitHub 或邮箱都行），点 **New project**。
+2. 填写：
+   - Name：`vocab-lab`
+   - Database Password：自己设一个（只用于数据库，记下来备用）
+   - Region：选 **Southeast Asia (Singapore)** 或 **Northeast Asia (Tokyo)**，国内访问相对快
+3. 等 2–3 分钟初始化完成。
+4. 进入 **Project Settings → API**，复制两个值：
+   - **Project URL**：形如 `https://abcdefgh.supabase.co`
+   - **anon public**：一长串 `eyJhbGciOi...`
 
-> 如果控制台里找不到 clientId，把「环境 → 设置」页截图发我，我按你的界面指位置。
+> anon key 本来就是公开给浏览器用的，安全性由下面的 RLS 规则保证，不要用 `service_role` 那个。
 
-## 二、开启邮箱登录（需要发件邮箱）
+## 二、开启邮箱登录
 
-1. 控制台 → 环境 → **登录授权（身份认证）** → 开启**邮箱登录**。
-2. 打开「配置发件人」，填入发件邮箱的 **SMTP 账号信息**：
-   - 推荐 QQ 邮箱：登录 QQ 邮箱网页版 → 设置 → 账户 → 开启「IMAP/SMTP 服务」→ 生成**授权码**；
-   - 发件人地址填你的 QQ 邮箱，SMTP 用户名同上，密码填**授权码**（不是 QQ 密码）。
-3. 「应用配置」里填：
-   - 应用名称：`词汇实验室`
-   - 自动跳转链接：`https://lyl-creator.github.io/vocab-lab/`
+1. **Authentication → Providers → Email**：默认已开启。
+2. **Authentication → Sign In / Up**：
+   - 想「注册后直接登录」→ 把 **Confirm email** 关掉；
+   - 想保留邮箱验证 → 保持开启，用户注册后要去邮箱点确认链接（Supabase 自带发信服务有频率限制，个人使用足够）。
+3. **Authentication → URL Configuration**（可选）：
+   - Site URL：`https://lyl-creator.github.io/vocab-lab/`
+   - Redirect URLs：同上（密码登录用不到，配了也不碍事）
 
-> 这一项是给「注册激活邮件 / 验证码邮件」用的，不配置的话用户收不到信。
+## 三、建表 + 权限（复制粘贴执行）
 
-## 三、创建数据库集合
+打开 **SQL Editor**，执行：
 
-1. 控制台 → 环境 → **数据库** → 新建集合，名字必须是 **`vocab_sync`**。
-2. 集合 → 权限设置 → 选 **「仅创建者可读写」**（这样每个用户只能读写自己那条记录，前端即使暴露也不会串号）。
-3. 不需要建索引，也不需要云函数。
+```sql
+create table if not exists public.vocab_sync (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  payload jsonb not null,
+  updated_at timestamptz not null default now()
+);
 
-## 四、配置安全域名
+alter table public.vocab_sync enable row level security;
 
-控制台 → 环境 → **安全配置 / Web 安全域名** → 添加：
+create policy "own row read" on public.vocab_sync
+  for select using (auth.uid() = user_id);
 
+create policy "own row insert" on public.vocab_sync
+  for insert with check (auth.uid() = user_id);
+
+create policy "own row update" on public.vocab_sync
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 ```
-lyl-creator.github.io
-```
 
-（如果之后绑了自定义域名，再加一条。）
+这三条规则保证：**每个账号只能读写自己那一行**，别人的记录拿不到。
 
-## 五、填配置并重新部署
+## 四、填配置并部署
 
 编辑 `src/sync.ts` 顶部：
 
 ```ts
 export const SYNC_CONFIG: SyncConfig = {
-  envId: 'vocab-lab-1g2h3i4j',   // 你的环境 ID
-  region: 'ap-shanghai',
-  clientId: 'xxxxx-xxxxx',       // 控制台里的 clientId
+  url: 'https://abcdefgh.supabase.co',
+  anonKey: 'eyJhbGciOi...',
 }
 ```
 
 然后：
 
 ```bash
+npm run build
 node build-pages.mjs
 node build-standalone.mjs
 git add -A && git commit -m "chore: 开启云同步" && git push
 ```
 
-部署完成后，偏好设置里会出现「账号与云同步」。
+部署后：**偏好设置 → 账号与云同步**。
 
-## 六、自测清单
+## 五、自测清单
 
-1. 打开 `https://lyl-creator.github.io/vocab-lab/` → 偏好设置 → 登录 → 填邮箱 → 发送验证码；
-2. 邮箱收到 6 位验证码（第一次是注册，CloudBase 可能还会发一封激活邮件，按提示点一下）；
-3. 输入验证码 → 登录成功 → 提示「已登录并上传本地记录」或「已拉取云端记录」；
-4. 换一台设备/无痕窗口，用同一邮箱登录 → 记录应该出现；
-5. 两边都有记录时，会弹出「云端已有学习记录」，可选 **合并两边 / 用云端覆盖本地 / 用本地覆盖云端**。
+1. 偏好设置 → 账号与云同步 → 登录 → 填邮箱 + 密码 → 点「注册」；
+2. 若提示「注册成功，请先到邮箱点确认链接」→ 去邮箱点一下，再回来「登录」；
+3. 提示「已登录并上传本地记录」＝本地已推到云端；
+4. 换台设备 / 无痕窗口，同一邮箱登录 → 提示「已拉取云端记录」，记录出现；
+5. 两边都有记录时会弹「云端已有学习记录」，可选 **合并两边 / 用云端覆盖本地 / 用本地覆盖云端**；
+6. 做完一局测验，云端记录会自动 +1。
 
-## 七、说明与限制
+## 六、说明与限制
 
-- SDK 不打包进站点，登录时才从 CloudBase CDN 加载（`static.cloudbase.net`），所以首屏体积不受影响；
-- 同步的是**测验记录 + 生词本**（含每个词库的归属），不含「当前进行中的测验」和「偏好设置」；
-- 同一条测验按 `id` 去重、生词按 `wordId` 取较大错次，合并是可重复执行的；
-- 邮箱只用于登录，站点不会主动给你发邮件（除了 CloudBase 的验证码/激活信）；
-- 如果之后要支持微信登录，需要已认证的公众号/小程序，再加一个登录按钮即可。
+- 同步内容：测验记录 + 生词本（含每个词库归属），不含进行中的测验和偏好设置；
+- 合并规则：报告按 `id` 去重取较新；生词按 `wordId` 取较大错次、已掌握取「或」；
+- SDK 不打包进站点，登录时才从 unpkg 加载（失败自动回退 jsDelivr），首屏体积不变；
+- Supabase 免费额度：500MB 数据库、5 万月活，个人用量远远够；
+- 数据存在 Supabase（新加坡/东京），只有 `user_id` + 一份 JSON，没有密码（密码由 Supabase Auth 加密保存）；
+- 如果以后想加微信登录，需要接第三方 OAuth，再加一个登录按钮即可。
