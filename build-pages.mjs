@@ -100,6 +100,9 @@ function pageHtml({ path, title, desc, depth, noindex, absolute }) {
     '<meta property="og:url" content="' + url + '" />',
     '<meta name="twitter:card" content="summary" />',
     '<link rel="canonical" href="' + url + '" />',
+    '<link rel="icon" href="' + prefix + 'favicon.ico" sizes="any" />',
+    '<link rel="icon" type="image/svg+xml" href="' + prefix + 'favicon.svg" />',
+    '<link rel="apple-touch-icon" href="' + prefix + 'apple-touch-icon.png" />',
     '<link rel="stylesheet" crossorigin href="' + prefix + 'assets/' + cssName + '" />',
     '</head>',
     '<body>',
@@ -119,6 +122,11 @@ for (const name of ['index.html', '404.html', 'sitemap.xml', 'robots.txt', 'asse
 mkdirSync(join(docs, 'assets'), { recursive: true })
 for (const file of readdirSync(resolve(root, 'dist/assets'))) {
   copyFileSync(join(root, 'dist/assets', file), join(docs, 'assets', file))
+}
+
+for (const file of ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png']) {
+  const src = join(root, 'dist', file)
+  if (existsSync(src)) copyFileSync(src, join(docs, file))
 }
 
 for (const route of routes) {

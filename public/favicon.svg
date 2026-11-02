@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="词汇实验室">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#e8f2cd"/>
+      <stop offset="1" stop-color="#cfe1a7"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="118" fill="url(#g)"/>
+  <path d="M243 170c-44-27-100-31-148-9-6 3-10 9-10 16v204c0 9 9 15 18 11 42-19 94-15 130 11 6 4 14 4 20 0z" fill="#4f673b"/>
+  <path d="M269 170c44-27 100-31 148-9 6 3 10 9 10 16v204c0 9-9 15-18 11-42-19-94-15-130 11-6 4-14 4-20 0z" fill="#4f673b"/>
+  <path d="M256 176v214" stroke="#e8f2cd" stroke-width="12" stroke-linecap="round" opacity=".55"/>
+  <path d="M392 96l9.5 22.5L424 128l-22.5 9.5L392 160l-9.5-22.5L360 128l22.5-9.5z" fill="#c9a227"/>
+</svg>
