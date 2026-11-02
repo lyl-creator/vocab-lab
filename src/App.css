@@ -137,3 +137,16 @@
 .tr-ref h3:not(:first-child){margin-top:16px}
 .tr-ref p{font-size:15px;line-height:1.95;color:#3d4237}
 .tr-tips{color:#4c5a41}
+
+
+/* ---- 真题套次选择 ---- */
+.exam-picker{display:flex;flex-direction:column;gap:9px}
+.exam-chip{font-size:13.5px;border:1px solid #e3e8d8;border-radius:6px;padding:8px 13px;background:#fafbf5;color:#5e6b4c;white-space:nowrap;transition:background .15s,border-color .15s}
+.exam-chip:hover{border-color:#b9c99b;background:#f2f6e7}
+.exam-chip.selected{color:#4f6b34;border-color:#a9c17e;background:#e9f1d8;font-weight:600}
+.exam-picker>.exam-chip{align-self:flex-start}
+.exam-group{display:flex;align-items:center;gap:10px}
+.exam-group>span{font-size:12.5px;color:#9aa78a;width:76px;flex-shrink:0;letter-spacing:.3px}
+.exam-chips{display:flex;gap:6px;flex-wrap:wrap}
+.daily-card>strong{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:550px){.exam-group{align-items:flex-start}.exam-group>span{width:66px;padding-top:8px}.exam-chip{padding:7px 10px;font-size:12.5px}}
