@@ -187,3 +187,95 @@
 .account-modal{width:520px}
 .account-login{margin-top:4px}
 @media (max-width:550px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.account-modal{width:100%}.account-head h2{font-size:20px}}
+
+
+/* ---------- 响应式与可读性 ---------- */
+html{-webkit-text-size-adjust:100%}
+img,svg{max-width:100%}
+.topbar{gap:10px;flex-wrap:nowrap}
+.breadcrumb{min-width:0;overflow:hidden;white-space:nowrap}
+.breadcrumb>span,.breadcrumb>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top-right{flex-shrink:0;min-width:0}
+.account-chip{min-width:0}
+.account-chip .learner{max-width:30vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.word-en strong,.cloze-passage,.tr-ref p,.daily-quote,.tr-tips,.word-row>span:nth-child(2),.notebook-card p{overflow-wrap:anywhere}
+.mode-card p,.feedback p{overflow-wrap:break-word}
+
+/* 平板 / 手机：插画缩成右上角半透明背景，正文整体放大 1px */
+@media (max-width:780px){
+  .hero{overflow:hidden}
+  .hero-copy{max-width:100%}
+  .hero h2,.hero-copy p,.hero-actions,.hero-badge{position:relative;z-index:2}
+  .page-heading p{font-size:15px}
+  .hero-copy p{font-size:14.5px}
+  .mode-card p{font-size:14px}
+  .metric>span,.metric>.text-link{font-size:13px}
+  .metric-top{font-size:13.5px}
+  .daily-quote{font-size:15px}
+  .word-row>span:nth-child(2){font-size:14px}
+  .notebook-card p{font-size:14px}
+  .feedback p{font-size:14px}
+  .cloze-passage{font-size:16px}
+  .tr-ref p{font-size:15.5px}
+  .history-row small,.recent-list small{font-size:13px}
+  .breadcrumb{font-size:14px}
+  .account-chip .learner{font-size:14px}
+}
+
+@media (max-width:640px){
+  .word-art{position:absolute;width:150px;right:-16px;top:4px;opacity:.42;pointer-events:none}
+}
+
+@media (max-width:480px){
+  .breadcrumb>span,.breadcrumb>svg{display:none}
+  .top-divider{display:none}
+  .account-chip .learner{max-width:36vw}
+  .hero h2{font-size:24.5px;line-height:1.52}
+  .word-art{width:118px;top:0;right:-20px;opacity:.38}
+  .hero-actions{flex-wrap:wrap;gap:10px}
+  .hero-bottom{gap:12px;font-size:11.5px}
+  .metric{padding:14px 13px}
+  .mode-grid{gap:10px}
+  .daily-word h3{font-size:27px}
+  .quiz-footer{gap:8px}
+}
+
+/* 低高度窗口（横屏手机 / 放大 200%）：弹窗内部滚动，不裁切 */
+@media (max-height:680px){
+  .modal{max-height:calc(100dvh - 24px);padding:22px 20px}
+  .modal h2{font-size:21px}
+  .modal-overlay{padding:12px}
+}
+
+
+/* 小屏标题栏按钮：保留文字与图标，可点区域不小于 36px */
+@media (max-width:550px){
+  .page-heading>.subtle-button{font-size:12.5px;padding:8px 11px;gap:6px;min-width:0;min-height:36px}
+  .page-heading>.subtle-button svg:last-child{display:inline}
+  .page-heading>.subtle-button svg{width:15px;height:15px}
+  .page-heading>.primary-button{min-height:38px}
+  .topbar{height:60px}
+  .account-chip{padding:3px 8px 3px 3px}
+  .account-chip .avatar{width:26px!important;height:26px!important;font-size:13px}
+}
+
+/* 报告页答题回顾：窄屏下说明另起一行，位置标签不换行 */
+.review-row>span:last-child{white-space:nowrap}
+@media (max-width:550px){
+  .review-panel>.panel-heading{flex-direction:column;align-items:flex-start;gap:4px}
+  .review-panel>.panel-heading>.quiet{max-width:none}
+  .review-row>span:last-child{max-width:86px}
+}
+
+/* 侧栏：内容不被压缩裁切，超长时可滚动 */
+.sidebar{overflow-y:auto;overflow-x:hidden}
+.brand,.dict-switch,.nav-item,.sidebar-label,.sidebar-note,.sidebar-bottom{flex:0 0 auto}
+.sidebar::-webkit-scrollbar{width:6px}
+.sidebar::-webkit-scrollbar-thumb{background:#d9dccf;border-radius:6px}
+
+/* 矮屏：隐藏侧栏装饰语，保证导航与设置项完整可见 */
+@media (max-height:980px) and (min-width:781px){
+  .sidebar-note{display:none}
+  .sidebar-label{margin-top:30px}
+  .nav-item{padding:11px 16px}
+}
