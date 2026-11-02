@@ -1,12 +1,13 @@
 import type { Word } from './vocabulary'
 import type { Passage } from './passages'
+import type { ExamCloze } from './data/exams'
 export type Mode = 'en-zh' | 'zh-en' | 'spelling' | 'matching' | 'cloze'
 export type Answer = { wordId: string; correct: boolean; given: string; seconds: number }
 export type Question = { words: Word[]; options: Word[] }
 export type ClozeBlank = { wordId: string; en: string; zh: string; form: string }
 export type ClozeToken = { t: 'text'; v: string } | { t: 'blank'; i: number }
 export type ClozeBankItem = { wordId: string; en: string; answer: boolean }
-export type ClozeData = { passageId: string; title: string; source: string; blocks: ClozeToken[][]; blanks: ClozeBlank[]; bank: ClozeBankItem[] }
+export type ClozeData = { passageId: string; title: string; source: string; blocks: ClozeToken[][]; blanks: ClozeBlank[]; bank: ClozeBankItem[]; exam?: boolean }
 export type Test = { id: string; mode: Mode; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[]; cloze?: ClozeData }
 export type Report = { id: string; mode: Mode; answers: Answer[]; seconds: number; date: number; unit: number; total: number; review: boolean }
 export type NotebookEntry = { wordId: string; mistakes: number; lastSeen: number; mastered: boolean }
@@ -157,5 +158,39 @@ export function createCloze(source: Word[], passageList: Passage[], count: numbe
       ]
       return { passageId: passage.id, title: passage.title, source: passage.source, blocks, blanks, bank: shuffle(bank) }
     })(),
+  }
+}
+
+
+// ---------- 四级真题：选词填空 ----------
+export function createExamCloze(exam: ExamCloze): Test {
+  const byLetter = new Map(exam.bank.map(b => [b.letter, b.word]))
+  const blocks: ClozeToken[][] = []
+  const blanks: ClozeBlank[] = []
+  let index = 0
+  exam.paragraphs.forEach(para => {
+    const tokens: ClozeToken[] = []
+    let cursor = 0
+    const re = /\b(2[6-9]|3[0-5])\b/g
+    let m: RegExpExecArray | null
+    while ((m = re.exec(para))) {
+      if (m.index > cursor) tokens.push({ t: 'text', v: para.slice(cursor, m.index) })
+      const num = Number(m[1])
+      const word = byLetter.get(exam.answers[num - 26]) || ''
+      tokens.push({ t: 'blank', i: index })
+      blanks.push({ wordId: exam.id + '-' + num, en: word, zh: '真题选词', form: word })
+      index++
+      cursor = m.index + m[0].length
+    }
+    if (cursor < para.length) tokens.push({ t: 'text', v: para.slice(cursor) })
+    blocks.push(tokens)
+  })
+  const bank: ClozeBankItem[] = exam.bank.map(b => ({ wordId: exam.id + '-b-' + b.letter, en: b.word, answer: exam.answers.includes(b.letter) }))
+  const words = blanks.map(b => ({ id: b.wordId, en: b.en, zh: b.zh, pos: '', unit: 0, section: '', page: 0, phrase: false, starred: false }))
+  return {
+    id: crypto.randomUUID(), mode: 'cloze', unit: 0, section: '', review: false,
+    questions: [{ words, options: [] }],
+    index: 0, answers: [], started: Date.now(), elapsed: 0, matchingFailures: [],
+    cloze: { passageId: exam.id, title: '四级真题 · 选词填空', source: exam.source, blocks, blanks, bank, exam: true },
   }
 }
