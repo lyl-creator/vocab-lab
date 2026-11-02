@@ -192,8 +192,10 @@ function App(){
  const [nickDraft,setNickDraft]=useState(profile.nickname)
  const [newPassword,setNewPassword]=useState('')
  useEffect(()=>{try{localStorage.setItem('vocab-lab-profile',JSON.stringify(profile))}catch{}},[profile])
- const saveProfileNow=async()=>{const next={nickname:nickDraft.trim().slice(0,20),avatar:profile.avatar};setProfile(next);if(syncUser){try{await syncSaveProfile(next);notify('资料已保存并同步')}catch(e:any){notify(e?.message||'云端保存失败，已存在本机')}}else notify('资料已保存到本机')}
- const pickAvatar=(id:string)=>{const next={...profile,avatar:id};setProfile(next);if(syncUser){void syncSaveProfile(next).catch(()=>{})}}
+ const profileSaveChain=useRef<Promise<unknown>>(Promise.resolve())
+ const queueProfileSave=(next:{nickname:string;avatar:string})=>{if(!syncUser)return profileSaveChain.current;profileSaveChain.current=profileSaveChain.current.then(()=>syncSaveProfile(next)).catch(()=>{});return profileSaveChain.current}
+ const saveProfileNow=async()=>{const next={nickname:nickDraft.trim().slice(0,20),avatar:profile.avatar};setProfile(next);if(syncUser){try{await queueProfileSave(next);notify('资料已保存并同步')}catch(e:any){notify(e?.message||'云端保存失败，已存在本机')}}else notify('资料已保存到本机')}
+ const pickAvatar=(id:string)=>{const next={nickname:nickDraft.trim().slice(0,20),avatar:id};setProfile(next);if(syncUser)void queueProfileSave(next)}
  const savePassword=async()=>{if(newPassword.length<6){notify('密码至少 6 位');return}try{await syncChangePassword(newPassword);setNewPassword('');notify('密码已更新')}catch(e:any){notify(e?.message||'密码更新失败')}}
  const syncDevice=typeof navigator!=='undefined'?navigator.userAgent.slice(0,80):'web'
  const syncPayload=(history:Report[],notebook:typeof store.notebook):SyncPayload=>({version:1,updatedAt:Date.now(),history,notebook,device:syncDevice})
