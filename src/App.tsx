@@ -49,6 +49,34 @@ function App(){
  const [seqAsk,setSeqAsk]=useState(false)
  const words=useMemo(()=>dictWords(dictId),[dictId])
  const modeList=useMemo(()=>modes.filter(m=>dictMeta(dictId).modes.includes(m.id)),[dictId])
+ const applyingHash=useRef(false)
+ const buildHash=()=>{
+  if(dictId==='book')return '#/book'+(filter?'/'+filter:'')+(section?'/'+section:'')
+  if(dictId==='cet4')return '#/cet4'+(highOnly?'/high':'')
+  return '#/translation'+(group?'/'+encodeURIComponent(group):'')
+ }
+ useEffect(()=>{
+  const apply=()=>{
+   const parts=decodeURIComponent(location.hash.replace(/^#\/?/,'')).split('/').filter(Boolean)
+   const id=parts[0] as DictId
+   if(!DICTS.some(d=>d.id===id))return
+   applyingHash.current=true
+   setDictId(id)
+   if(id==='book'){setFilter(parts[1]?Number(parts[1])||0:0);setSection(parts[2]||'');setHighOnly(false)}
+   else if(id==='cet4'){setHighOnly(parts[1]==='high');setFilter(0);setSection('')}
+   else {setGroup(parts[1]||'');setFilter(0);setSection('');setHighOnly(false)}
+   if(parts.length>1)setPage('words')
+   window.setTimeout(()=>{applyingHash.current=false},0)
+  }
+  apply()
+  window.addEventListener('hashchange',apply)
+  return()=>window.removeEventListener('hashchange',apply)
+ },[])
+ useEffect(()=>{
+  if(applyingHash.current)return
+  const target=buildHash()
+  if(location.hash!==target)history.replaceState(null,'',target)
+ },[dictId,filter,section,group,highOnly])
  useEffect(()=>{localStorage.setItem('vocab-lab-dict',dictId)},[dictId])
  const [tick,setTick]=useState(0); const [paused,setPaused]=useState(false)
  const [input,setInput]=useState(''); const [answer,setAnswer]=useState<Answer|null>(null)
