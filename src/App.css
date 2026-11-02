@@ -392,10 +392,19 @@ img,svg{max-width:100%}
 .count-slider::-moz-range-thumb{width:20px;height:20px;border:3px solid #f7f9ef;border-radius:50%;background:#426a37;box-shadow:0 1px 4px rgba(48,57,46,.28);cursor:grab}
 .count-slider::-moz-range-track{height:6px;border-radius:999px;background:transparent}
 .count-input{display:flex;align-items:center;gap:3px;border:1px solid var(--border);border-radius:9px;padding:7px 9px;background:#fff;flex:0 0 auto}
-.count-input input{width:44px;border:0;outline:none;background:transparent;font-size:14.5px;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+.count-input input{width:58px;border:0;outline:none;background:transparent;font-size:14.5px;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
 .count-input span{font-size:12px;color:#8b9384}
 @media (max-width:480px){
   .count-picker{gap:8px}
-  .count-input input{width:36px;font-size:14px}
+  .count-input input{width:54px;font-size:14px}
   .count-input{padding:6px 7px}
 }
+
+.count-presets{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.count-preset{flex:1 1 0;min-width:0;padding:9px 4px;border:1px solid var(--border);border-radius:9px;background:#fff;font-size:13px;color:#4b5443;cursor:pointer;transition:background .15s,border-color .15s}
+.count-preset:hover:not(:disabled){background:#f3f7e9;border-color:#c8d6aa}
+.count-preset.selected{background:#eef5dd;border-color:#a8c37f;color:#3c5b2b;font-weight:600}
+.count-preset:disabled{opacity:.4;cursor:not-allowed}
+
+.count-input input::-webkit-outer-spin-button,.count-input input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.count-input input[type=number]{-moz-appearance:textfield;appearance:textfield}
