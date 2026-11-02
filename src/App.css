@@ -166,3 +166,24 @@
 .sync-row-actions{display:flex;align-items:center;gap:12px}
 .sync-choice{display:flex;flex-direction:column;gap:9px;margin-top:4px}
 .sync-choice>button{justify-content:center}
+
+
+/* ---- 账号入口与账号管理 ---- */
+.account-chip{display:inline-flex;align-items:center;gap:9px;padding:4px 10px 4px 4px;border-radius:999px;border:1px solid transparent;background:transparent;cursor:pointer;font-size:13.5px;color:var(--ink)}
+.account-chip:hover{background:#f0f2e8;border-color:#e3e7d8}
+.avatar{display:inline-grid;place-items:center;border-radius:50%;background:#e7e8dd;border:2px solid #fff;font-family:Georgia,serif;font-size:15px;color:#5d6b4b;flex-shrink:0;line-height:1}
+.account-head{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.account-head h2{font-size:22px;font-weight:600;margin-bottom:4px}
+.account-head p{font-size:13px;color:#8d9484}
+.avatar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:4px 0 6px}
+.avatar-pick{aspect-ratio:1;display:grid;place-items:center;font-size:19px;border-radius:12px;border:2px solid transparent;cursor:pointer;line-height:1}
+.avatar-pick.selected{border-color:#8eab50;box-shadow:0 0 0 2px #ffffff inset}
+.avatar-pick.letter{background:#f0f2e8;color:#5d6b4b;font-family:Georgia,serif;font-size:17px}
+.account-row{display:flex;gap:9px;align-items:center}
+.account-row .sync-input{flex:1}
+.account-modal>.sync-input{width:100%}
+.account-sync{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding-top:15px;border-top:1px solid #edf0e4;font-size:12.5px;color:#8b9680}
+.account-sync>div{display:flex;gap:8px}
+.account-modal{width:520px}
+.account-login{margin-top:4px}
+@media (max-width:550px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.account-modal{width:100%}.account-head h2{font-size:20px}}

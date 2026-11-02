@@ -112,6 +112,32 @@ export async function signUp(email: string, password: string): Promise<SyncAccou
   return acc
 }
 
+export type SyncProfile = { nickname: string; avatar: string }
+
+export async function fetchProfile(): Promise<SyncProfile | null> {
+  const client = await getClient()
+  const { data, error } = await client.auth.getUser()
+  if (error) return null
+  const meta = data?.user?.user_metadata
+  if (!meta) return null
+  const nickname = typeof meta.nickname === 'string' ? meta.nickname : ''
+  const avatar = typeof meta.avatar === 'string' ? meta.avatar : ''
+  if (!nickname && !avatar) return null
+  return { nickname, avatar }
+}
+
+export async function saveProfile(profile: SyncProfile): Promise<void> {
+  const client = await getClient()
+  const { error } = await client.auth.updateUser({ data: { nickname: profile.nickname, avatar: profile.avatar } })
+  if (error) throw new Error(humanize(error.message))
+}
+
+export async function changePassword(password: string): Promise<void> {
+  const client = await getClient()
+  const { error } = await client.auth.updateUser({ password })
+  if (error) throw new Error(humanize(error.message))
+}
+
 export async function signOut() {
   const client = await getClient()
   await client.auth.signOut()
