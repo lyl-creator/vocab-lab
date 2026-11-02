@@ -279,3 +279,50 @@ img,svg{max-width:100%}
   .sidebar-label{margin-top:30px}
   .nav-item{padding:11px 16px}
 }
+
+
+/* 顶栏吸顶，滚动时头像与昵称始终可见 */
+.topbar{position:sticky;top:0;z-index:30}
+
+/* 移动端答题：压缩纵向间距，让四个选项一屏可见；提交条不再浮起遮挡 */
+@media (max-width:640px){
+  .quiz-card{padding:16px 14px 0}
+  .quiz-header{margin-bottom:12px}
+  .quiz-meta{margin:8px 0 12px;font-size:12px}
+  .quiz-type{padding:5px 9px;font-size:12.5px}
+  .quiz-instruction{margin-top:10px;font-size:13px}
+  .question-word{margin:14px 0 16px}
+  .question-word h2{font-size:22px;line-height:1.45}
+  .english-word h2{font-size:34px}
+  .answer-options{gap:9px;margin-bottom:14px}
+  .answer-option{padding:11px 12px;min-height:50px;font-size:13.5px;gap:10px}
+  .option-letter{width:22px;height:22px;font-size:12.5px}
+  .quiz-footer{position:static;padding:10px 0;margin-top:8px;min-height:0}
+  .quiz-bottom-note{padding:14px 8px 6px}
+}
+
+/* 使用指南页面 */
+.guide{max-width:860px}
+.guide-toc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px}
+.guide-toc a{font-size:12.5px;padding:6px 11px;border:1px solid var(--border);border-radius:999px;background:#fff;color:#6b7a52}
+.guide-toc a:hover{background:#f2f6e8;border-color:#b9c99b;color:#3f622c}
+.guide-section{margin-bottom:30px;scroll-margin-top:96px}
+.guide-section h2{font-size:19px;margin-bottom:10px;font-weight:600}
+.guide p{font-size:14.5px;line-height:1.95;color:#4b5443}
+.guide-list{margin:10px 0;padding-left:20px;font-size:14.5px;line-height:2;color:#4b5443}
+.guide-list li{margin-bottom:6px}
+.guide code{background:#f2f5e9;border:1px solid #e4e9d8;border-radius:5px;padding:1px 6px;font-size:13px}
+.guide-note{background:#f5f7ee;border:1px solid var(--border);border-radius:9px;padding:12px 14px;font-size:13.5px;color:#7b8569;line-height:1.9}
+.guide-links li{line-height:1.9;margin-bottom:4px}
+.guide-faq dt{font-size:14.5px;font-weight:600;margin-top:16px}
+.guide-faq dd{margin:6px 0 0;font-size:14px;color:#6d7760;line-height:1.9}
+.guide-foot{margin-top:38px;font-size:12.5px;color:#9aa392;letter-spacing:1px}
+@media (max-width:550px){
+  .guide-section h2{font-size:17.5px}
+  .guide p,.guide-list{font-size:14px}
+  .guide-section{scroll-margin-top:76px}
+}
+.sidebar-bottom>button.active{color:#3b612d;font-weight:600}
+.guide ul.guide-list{list-style:disc}
+.guide ol.guide-list{list-style:decimal}
+.guide-list li::marker{color:#9db97f}

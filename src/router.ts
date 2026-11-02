@@ -14,7 +14,7 @@ import type { Mode } from './engine'
 //   /cet4/cloze/               直接选中该练习方式
 //   /cet4/cloze/2025-12-2/     并预选真题套次
 
-export type Page = 'home' | 'words' | 'notebook' | 'history'
+export type Page = 'home' | 'words' | 'notebook' | 'history' | 'guide'
 
 export type Route = {
   page: Page
@@ -55,6 +55,7 @@ export function parseRoute(path: string): Route {
   const head = segments[0]
   if (head === 'notebook') return { ...defaultRoute(), page: 'notebook' }
   if (head === 'history') return { ...defaultRoute(), page: 'history' }
+  if (head === 'guide') return { ...defaultRoute(), page: 'guide' }
   if (head === 'home') return defaultRoute()
 
   const dict = DICTS.some((d) => d.id === head) ? (head as DictId) : null
@@ -78,6 +79,7 @@ export function routePath(route: Route): string {
   if (route.page === 'home') return '/'
   if (route.page === 'notebook') return '/notebook/'
   if (route.page === 'history') return '/history/'
+  if (route.page === 'guide') return '/guide/'
   let path = '/' + route.dict + '/'
   if (route.dict === 'book') {
     if (route.unit) path += 'u' + route.unit + '/'

@@ -37,6 +37,7 @@ const add = (path, title, desc) => routes.push({ path, title: title + ' · 词�
 add('/', '学习概览', '词汇实验室：用教材与四六级词库做英译中、中译英、拼写、配对、真题选词填空与翻译练习，学习记录只保存在本机浏览器。')
 add('/notebook/', '生词本', '测验中答错的词会自动归档到这里，按错题次数排序，可标记为已掌握或集中复习。')
 add('/history/', '学习统计', '查看累计测验次数、综合正确率、近 7 天学习节奏与每一次测验的详细报告。')
+add('/guide/', '使用指南', '词汇实验室的功能说明：三个词库、六种练习、四级真题、生词本与统计、账号云同步、数据备份与常见问题。')
 
 add('/book/', '课本词库', '教材 241 个词，含 ★ 重点词标记，按 Unit 与 Episode / Text 栏目筛选练习。')
 const sectionsOf = (unit) => [...new Set(vocabulary.filter((w) => w.unit === unit).map((w) => w.section))]
