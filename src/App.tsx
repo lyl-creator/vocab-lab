@@ -13,7 +13,18 @@ import { syncConfigured, currentAccount, signIn as syncSignIn, signUp as syncSig
 import './App.css'
 type Page = 'home' | 'words' | 'notebook' | 'history' | 'guide'
 const modeIcons = { 'en-zh': BookOpen, 'zh-en': RotateCcw, spelling: Keyboard, matching: Link2, cloze: Puzzle, translate: Languages }
-const wordById=(id:string)=>wordIndex.get(id)!
+const examWordById=(id:string):Word|null=>{
+ const m=/^(\d{4}-\d{2}-\d)-(\d+)$/.exec(id)
+ if(!m)return null
+ const exam=EXAM_CLOZE.find(e=>e.id===m[1])
+ const num=Number(m[2])
+ const letter=exam?.answers[num-26]
+ const word=exam?.bank.find(b=>b.letter===letter)
+ if(!word)return null
+ return {id,en:word.word,zh:'真题选词',pos:'',unit:0,section:'',page:0,phrase:false,starred:false,ipa:''}
+}
+const missingWord=(id:string):Word=>({id,en:id,zh:'该词条已不在当前词库',pos:'',unit:0,section:'',page:0,phrase:false,starred:false})
+const wordById=(id:string):Word=>wordIndex.get(id)||examWordById(id)||missingWord(id)
 const Star=({w}:{w:Word})=>w&&w.starred?<span className="star-mark" title="重点词" aria-label="重点词">★</span>:null
 const dateLabel=(date:number)=>new Date(date).toLocaleDateString('zh-CN',{month:'short',day:'numeric'})
 
@@ -145,7 +156,7 @@ function App(){
  useEffect(()=>{setTrText('');setTrShown(false)},[test?.id])
  useEffect(()=>{if(page!=='words')return;const id=seqPos[dictId];if(!id)return;if(!words.some(w=>w.id===id))return;setSeqAsk(true)},[page,dictId])
  const dictHistory=useMemo(()=>store.history.filter(h=>h.dict===dictId),[store.history,dictId])
- const dictNotebook=useMemo(()=>store.notebook.filter(n=>n.dict===dictId&&wordIndex.has(n.wordId)),[store.notebook,dictId])
+ const dictNotebook=useMemo(()=>store.notebook.filter(n=>n.dict===dictId),[store.notebook,dictId])
  const pending=dictNotebook.filter(n=>!n.mastered)
  const allAnswers=dictHistory.flatMap(h=>h.answers)
  const totalSeconds=dictHistory.reduce((s,h)=>s+h.seconds,0)
@@ -241,7 +252,9 @@ function App(){
  const finish=(t:Test)=>{if(t.seq){const last=t.questions[t.questions.length-1]?.words[0];if(last)setSeqPos(p=>{const n={...p,[t.dict||dictId]:last.id};try{localStorage.setItem('vocab-lab-seq',JSON.stringify(n))}catch{};return n})}const result:Report={id:t.id,mode:t.mode,answers:t.answers,seconds:t.elapsed,date:Date.now(),unit:t.unit,total:t.questions.flatMap(q=>q.words).length,review:t.review,dict:t.dict||dictId};setStore(s=>({...s,history:[result,...s.history].slice(0,100),active:null}));pendingPush.current=!!syncUser;setReport(result);setPage('history');setPaused(false);window.scrollTo(0,0)}
  useEffect(()=>{
   const onKey=(e:KeyboardEvent)=>{
-   if(e.key!=='Enter'||!test||!complete||paused)return
+   if(e.key!=='Enter'||!test||paused)return
+   const answeredNow=test.mode==='matching'?(matched.length===(q?.words.length||0)):(test.mode==='cloze'||test.mode==='translate'?false:store.active?.answers.length===test.index+1)
+   if(!answeredNow)return
    const el=e.target as HTMLElement|null
    const tag=el?.tagName
    if(tag==='TEXTAREA'||el?.isContentEditable)return
@@ -251,13 +264,21 @@ function App(){
   window.addEventListener('keydown',onKey)
   return()=>window.removeEventListener('keydown',onKey)
  })
- const next=()=>{if(!test)return;if(test.index===test.questions.length-1)finish(test);else setStore(s=>({...s,active:s.active?{...s.active,index:s.active.index+1}:null}))}
+ const lastAdvance=useRef('')
+ const next=()=>{
+  if(!test)return
+  const key=test.id+':'+test.index
+  if(lastAdvance.current===key)return
+  lastAdvance.current=key
+  if(test.index===test.questions.length-1)finish(test)
+  else setStore(s=>{if(!s.active||s.active.index!==test.index)return s;return {...s,active:{...s.active,index:s.active.index+1}}})
+ }
  const toggleMastered=(id:string)=>setStore(s=>({...s,notebook:s.notebook.map(n=>n.wordId===id?{...n,mastered:!n.mastered}:n)}))
  const openImport=()=>importRef.current?.click()
  const handleImportFile=async(e:any)=>{const file=e.target.files?.[0];if(!file)return;const text=await file.text();const backup=parseBackup(text);e.target.value='';if(!backup||(!backup.history.length&&!backup.notebook.length)){notify('这个文件里没有可导入的学习记录');return}setDialog(null);setPendingImport({backup,summary:summarize(backup),fileName:file.name})}
  const addToNotebook=(w:Word)=>{setStore(s=>s.notebook.some(n=>n.wordId===w.id)?s:{...s,notebook:[...s.notebook,{wordId:w.id,mistakes:0,lastSeen:Date.now(),mastered:false}]});notify('已加入生词本')}
  const confirmImport=(mode:'merge'|'replace')=>{if(!pendingImport)return;setStore(s=>normalizeStore(mode==='merge'?mergeBackup(s,pendingImport.backup):replaceWithBackup(s,pendingImport.backup)));setPendingImport(null);notify(mode==='merge'?'已合并导入学习记录':'已用备份覆盖学习记录')}
- const exportData=()=>{const blob=new Blob([JSON.stringify({app:'Vocab Lab',exportedAt:new Date().toISOString(),...store,active:null},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='vocab-lab-backup.json';a.click();URL.revokeObjectURL(url);notify('学习记录已导出')}
+ const exportData=()=>{const blob=new Blob([JSON.stringify({app:'Vocab Lab',exportedAt:new Date().toISOString(),...store,active:null},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='vocab-lab-backup.json';a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),4000);notify('学习记录已导出')}
  const inScope=(w:Word)=>dictId==='book'?((!filter||w.unit===filter)&&(!section||w.section===section)):dictId==='cet4'?(!highOnly||!!w.starred):(!group||w.section===group)
  const sourcePool=words.filter(w=>inScope(w)&&`${w.en} ${w.zh}`.toLowerCase().includes(query.toLowerCase()))
  const bookPool=dictNotebook.filter(n=>(bookFilter==='all'||(bookFilter==='pending'?!n.mastered:n.mastered))&&(!filter||wordById(n.wordId)?.unit===filter)&&(!section||wordById(n.wordId)?.section===section)&&`${wordById(n.wordId)?.en} ${wordById(n.wordId)?.zh}`.toLowerCase().includes(query.toLowerCase()))
