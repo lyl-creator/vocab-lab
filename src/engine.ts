@@ -9,9 +9,10 @@ export type ClozeToken = { t: 'text'; v: string } | { t: 'blank'; i: number }
 export type ClozeBankItem = { wordId: string; en: string; answer: boolean }
 export type ClozeData = { passageId: string; title: string; source: string; blocks: ClozeToken[][]; blanks: ClozeBlank[]; bank: ClozeBankItem[]; exam?: boolean }
 export type TranslationData = { id: string; source: string; prompt: string; ref: string; tips?: string; tipsLabel?: string }
-export type Test = { id: string; mode: Mode; seq?: boolean; tr?: TranslationData; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[]; cloze?: ClozeData }
-export type Report = { id: string; mode: Mode; answers: Answer[]; seconds: number; date: number; unit: number; total: number; review: boolean }
-export type NotebookEntry = { wordId: string; mistakes: number; lastSeen: number; mastered: boolean }
+export type DictKey = 'book' | 'cet4' | 'translation'
+export type Test = { id: string; mode: Mode; seq?: boolean; tr?: TranslationData; questions: Question[]; index: number; answers: Answer[]; started: number; elapsed: number; unit: number; section: string; review: boolean; matchingFailures: string[]; cloze?: ClozeData; dict?: DictKey }
+export type Report = { id: string; mode: Mode; answers: Answer[]; seconds: number; date: number; unit: number; total: number; review: boolean; dict?: DictKey }
+export type NotebookEntry = { wordId: string; mistakes: number; lastSeen: number; mastered: boolean; dict?: DictKey }
 export type Store = { history: Report[]; notebook: NotebookEntry[]; active: Test | null; sound: boolean }
 export const modes: { id: Mode; title: string; english: string; description: string; tag: string; color: string }[] = [
 { id: 'en-zh',title:'英译中',english:'Recognize',description:'从英文出发，找到准确的中文释义。',tag:'词义识别',color:'mint' },
@@ -33,7 +34,23 @@ export function createTest(mode:Mode, source:Word[], count:number, notebook:Note
  const questions:Question[]=mode==='matching'?Array.from({length:Math.ceil(chosen.length/4)},(_,i)=>{const words=chosen.slice(i*4,i*4+4);return {words,options:shuffle(words)}}):chosen.map(word=>({words:[word],options:shuffle([word,...shuffle(pool.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&w.starred)).slice(0,3),...shuffle(pool.filter(w=>w.id!==word.id&&w.en!==word.en&&w.zh!==word.zh&&!w.starred)).slice(0,3)].slice(0,4))}))
  return {id:crypto.randomUUID(),mode,seq:ordered,unit:chosen[0]?.unit||0,section:chosen[0]?.section||'',review,questions,index:0,answers:[],started:Date.now(),elapsed:0,matchingFailures:[]}
 }
-export function addAnswers(book:NotebookEntry[],answers:Answer[],review=false):NotebookEntry[] {
+// 旧数据没有 dict 字段，按词条 id 前缀推断归属词库
+export function inferDict(wordId:string):DictKey {
+ if(!wordId)return 'book'
+ if(/^t\d+$/.test(wordId))return 'translation'
+ if(/^tr-/.test(wordId))return 'cet4'
+ if(/^c\d+$/.test(wordId))return 'cet4'
+ if(/^\d{4}-\d{2}-\d-\d+$/.test(wordId))return 'cet4'
+ return 'book'
+}
+export function normalizeStore(s:Store):Store {
+ return {
+  ...s,
+  notebook: s.notebook.map(n=>({...n,dict:n.dict||inferDict(n.wordId)})),
+  history: s.history.map(h=>({...h,dict:h.dict||inferDict(h.answers[0]?.wordId||'')})),
+ }
+}
+export function addAnswers(book:NotebookEntry[],answers:Answer[],review=false,dict?:DictKey):NotebookEntry[] {
  const next=book.map(n=>({...n}))
  const remove=new Set<string>()
  for(const a of answers){
@@ -46,7 +63,7 @@ export function addAnswers(book:NotebookEntry[],answers:Answer[],review=false):N
    continue
   }
   if(i>=0){next[i].mistakes++;next[i].lastSeen=Date.now();next[i].mastered=false}
-  else next.push({wordId:a.wordId,mistakes:1,lastSeen:Date.now(),mastered:false})
+  else next.push({wordId:a.wordId,mistakes:1,lastSeen:Date.now(),mastered:false,dict:dict||inferDict(a.wordId)})
  }
  return next.filter(n=>!remove.has(n.wordId))
 }
@@ -72,7 +89,7 @@ export function loadStore():Store {
   if(raw&&Array.isArray(raw.history)&&Array.isArray(raw.notebook)){
    const next:Store={...emptyStore,...raw}
    next.active=repairTest(next.active)
-   return next
+   return normalizeStore(next)
   }
  }catch{/* unavailable or invalid storage */}
  return {...emptyStore}
