@@ -20,7 +20,13 @@
 
 
 /* ---- 选词填空 ---- */
-.mode-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+/* ---- 练习方式：桌面三列两行 ---- */
+.mode-grid{grid-template-columns:repeat(3,1fr);gap:16px}
+.mode-card{min-height:196px}
+.mode-card p{max-width:none;min-height:0}
+.mode-card h3{font-size:19px}
+@media (max-width:1000px){.mode-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:550px){.mode-grid{grid-template-columns:1fr;gap:12px}.mode-card{min-height:190px}.mode-card h3{font-size:17px}.mode-card p{font-size:12.5px}}
 .setup-modes{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}
 .cloze-card{padding:28px 30px 0}
 .cloze-head{text-align:center;margin-bottom:18px}
