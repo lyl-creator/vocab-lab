@@ -32,6 +32,8 @@ for (const file of readdirSync(assetsDir)) {
   if (ext === '.js') js = file
 }
 
-const standalone = spawnSync(process.execPath, [join(root, 'build-standalone.mjs')], { cwd: root, stdio: 'inherit' })
-if (standalone.status !== 0) throw new Error('build-standalone.mjs failed')
+for (const script of ['build-pages.mjs', 'build-standalone.mjs']) {
+  const res = spawnSync(process.execPath, [join(root, script)], { cwd: root, stdio: 'inherit' })
+  if (res.status !== 0) throw new Error(script + ' failed')
+}
 console.log('assets minified: ' + js + ' -> ' + readFileSync(join(assetsDir, js)).length + ' bytes')

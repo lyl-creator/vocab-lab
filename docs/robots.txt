@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://lyl-creator.github.io/vocab-lab/sitemap.xml

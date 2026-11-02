@@ -29,7 +29,8 @@ src/
 ├── engine.ts        # 出题、判分、生词本、复习计分、选词填空/翻译题构造
 ├── vocabulary.ts    # 课本词库 241 词（含 ★ 重点词、栏目、页码）
 ├── passages.ts      # 8 篇课文原文（课本选词填空）
-├── dicts.ts         # 词库注册表：book / cet4 / translation，hash 路由用
+├── dicts.ts         # 词库注册表：book / cet4 / translation
+├── router.ts        # 路径 ↔ 状态映射：/cet4/high、/book/u1/episode-1、/translation/中国历史
 ├── transfer.ts      # 备份解析、合并/覆盖导入
 ├── data/
 │   ├── cet4.ts          # 四级大纲 4428 词（音标、高频标记 577）
@@ -41,8 +42,14 @@ scripts/
 ├── finalize-assets.mjs  # esbuild CLI 压缩 + 生成单文件产物
 ├── esbuild-shim.mjs     # 仅实现 transform() 的 esbuild 替身
 └── verify-exams.mjs     # 真题数据验收（12 套 × 10 空/15 候选）
-docs/index.html      # Pages 发布产物（构建生成，勿手改）
-vocab-lab.html       # 单文件版（构建生成）
+build-pages.mjs      # 生成 docs 下的多入口静态页（每页独立 title/description/og）
+docs/
+├── index.html       # 发布产物（构建生成，勿手改）
+├── cet4/index.html  # 每个词库/板块/练习方式一个目录 + 自己的 meta
+├── 404.html         # 深链兜底（Pages 对未生成路径返回它）
+├── sitemap.xml / robots.txt
+└── assets/          # 共享的 js / css
+vocab-lab.html       # 单文件离线版（构建生成）
 NEXT-SESSION-2025.md # 2025 真题转录记录（已完成）
 ```
 
@@ -69,22 +76,30 @@ NEXT-SESSION-2025.md # 2025 真题转录记录（已完成）
 
 ## 6. 路由
 
-哈希路由，格式 `#/<词库>[/<板块>]`：
+真实路径 + History API（GitHub Pages 上是 `https://lyl-creator.github.io/vocab-lab/...`）：
 
-```
-#/book                  #/book/1/Episode 1
-#/cet4                  #/cet4/high
-#/translation/中国文化概述
-```
+| 路径 | 页面 |
+| --- | --- |
+| `/` | 学习概览 |
+| `/notebook/`、`/history/` | 生词本、学习统计 |
+| `/book/`、`/book/u1/`、`/book/u1/episode-1/` | 课本词库，按 Unit 与栏目 |
+| `/cet4/`、`/cet4/high/` | 四级词库，全部 / 高频 |
+| `/translation/中国历史/` | 翻译词汇分组（11 个） |
+| `/cet4/cloze/`、`/book/spelling/` | 直接选中某个练习方式（打开设置弹窗） |
+| `/cet4/cloze/2025-12-2/` | 再预选真题套次 |
 
-切换词库/板块时用 `history.replaceState` 同步地址；带板块的链接会直接跳到「我的词库」页。
+- 解析/拼装都在 `src/router.ts`：`parseRoute(path)` ↔ `routePath(state)`；
+- 站内导航用 `pushState`（可后退），筛选/切换词库也会同步地址；旧版 `#/cet4/high` 链接会在加载时 301 式改写成新路径；
+- `build-pages.mjs` 为每个词库/板块/练习方式预生成独立 HTML（各自 title、description、og、canonical），另有 `sitemap.xml`、`robots.txt`；
+- 未预生成的组合（例如 `/cet4/high/cloze/`）由 `docs/404.html` 兜底：页面正常渲染，但 HTTP 状态码是 404。
 
 ## 7. 构建与部署
 
 ```bash
 npm install
 npm run build            # tsc -b && vite build → dist/
-node build-standalone.mjs  # 同时生成 docs/index.html 与 vocab-lab.html
+node build-pages.mjs     # 生成 docs/：42 个页面 + 404.html + sitemap + robots + assets
+node build-standalone.mjs  # 生成离线单文件 vocab-lab.html
 ```
 
 **本机三个坑**（换机器可忽略）：
@@ -94,7 +109,7 @@ node build-standalone.mjs  # 同时生成 docs/index.html 与 vocab-lab.html
 2. `git push` 常被网络代理 403 或断流 —— 改用 GitHub Git Data API：blobs → trees(`base_tree`) → commits → PATCH ref（历史提交即此法）；
 3. 若终端处于 DSH 文件沙箱内（`spawn EPERM`、`listen EACCES`），esbuild/Vite/Playwright 都会因「不能创建命名管道/监听端口」而失败：
    - 构建改用自带脚本：`node scripts/build-inline.mjs`（用 TypeScript 的 `transpileModule` 在进程内处理 TS/JSX，Rollup 直接打包，不启动 esbuild 服务；脚本会临时把 `scripts/esbuild-shim.mjs` 装到 `node_modules/esbuild/lib/main.js`，结束自动还原）；
-   - 再跑 `node scripts/finalize-assets.mjs`：用 esbuild **CLI** 压缩 `dist/assets`（CLI 不需要管道）并生成 `docs/index.html`、`vocab-lab.html`；
+   - 再跑 `node scripts/finalize-assets.mjs`：用 esbuild **CLI** 压缩 `dist/assets`（CLI 不需要管道）并调用 `build-pages.mjs` + `build-standalone.mjs`；
    - 沙箱内 Playwright / 无头浏览器都起不来（命名管道被禁、`listen` 返回 EACCES），验收改为 `node scripts/verify-exams.mjs`（直接调用 `engine.ts` 校验 12 套的 10 空/15 候选/答案字母）。
 
 Pages 配置：分支 `main`，目录 `/docs`，已加 `docs/.nojekyll`。
@@ -117,6 +132,8 @@ Pages 配置：分支 `main`，目录 `/docs`，已加 `docs/.nojekyll`。
 - 2024.06 的选词填空依赖文字层，个别词形可能仍需抽查；2025.06 文字层噪声较多（`o f`、`fbr`、`ifs` 等），已逐处清洗并校验；2026 全部为人工抄录，建议再校对一遍并保留勘误渠道。
 - 四级词库 4428 行在「我的词库」一次渲染，低端机可能略卡；如需优化可做虚拟滚动或分页。
 - 首屏 JS 约 980KB（gzip 360KB），主要来自三份词库数据；如需瘦身可改为按词库动态加载（注意会破坏单文件构建）。
+- 路径路由依赖 `docs/404.html` 兜底：只有预生成的 42 个页面返回 200，其余深链（如 `/cet4/high/cloze/`、`/cet4/cloze/2025-12-2/`）能正常渲染但状态码是 404，属于 GitHub Pages 的静态托管限制。
+- 中文本地化的分组路径（`/translation/中国历史/`）在地址栏会显示为百分号编码，属正常现象。
 - 译文自评是主观判定，未做自动评分。
 
 ## 10. 待办
