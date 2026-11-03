@@ -1,0 +1,34 @@
+name: Deploy to Cloudflare Pages
+
+# 手动触发：先在仓库 Settings → Secrets 里配置
+#   CLOUDFLARE_API_TOKEN   （Pages:Edit 权限）
+#   CLOUDFLARE_ACCOUNT_ID
+# 在 Settings → Variables 里配置
+#   CF_PROJECT_NAME        例如 vocab-lab
+#   SITE_ORIGIN            例如 https://vocab-lab.pages.dev
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build static site
+        run: npm run build && node build-pages.mjs && node build-standalone.mjs
+        env:
+          SITE_ORIGIN: ${{ vars.SITE_ORIGIN || 'https://vocab-lab.pages.dev' }}
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy docs --project-name=${{ vars.CF_PROJECT_NAME || 'vocab-lab' }}

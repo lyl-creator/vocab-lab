@@ -1,10 +1,11 @@
 import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync, readdirSync, rmSync } from 'node:fs'
+import { readFileSync, writeFileSync, readdirSync, rmSync, mkdirSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 const root = dirname(fileURLToPath(import.meta.url))
 const outDir = resolve(root, '.tmp-standalone')
 // esbuild 在 Windows 沙箱下清理临时文件可能失败，统一切到项目内的临时目录
+mkdirSync(resolve(root, '.tmp-build'), { recursive: true })
 process.env.TEMP = resolve(root, '.tmp-build')
 process.env.TMP = process.env.TEMP
 

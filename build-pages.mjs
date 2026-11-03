@@ -128,7 +128,7 @@ for (const file of readdirSync(resolve(root, 'dist/assets'))) {
   copyFileSync(join(root, 'dist/assets', file), join(docs, 'assets', file))
 }
 
-for (const file of ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png']) {
+for (const file of ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', '_headers']) {
   const src = join(root, 'dist', file)
   if (existsSync(src)) copyFileSync(src, join(docs, file))
 }

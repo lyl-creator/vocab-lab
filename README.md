@@ -75,7 +75,7 @@ npm run lint         # ESLint
 
 ## 构建与发布
 
-站点是**多页面静态站点**，发布目录是 `docs/`（GitHub Pages，分支 `main` + `/docs`）。完整流程：
+站点是**多页面静态站点**，构建产物在 `docs/`，可以同时发布到 GitHub Pages 与 Cloudflare Pages（见 [CLOUDFLARE.md](CLOUDFLARE.md)；后者在国内通常更快，且支持从源码自动构建）。完整流程：
 
 ```bash
 npm run build             # 1. 生成 dist/
@@ -111,6 +111,8 @@ npx serve docs
 | `/notebook/`、`/history/`、`/guide/` | 生词本、学习统计、使用指南 |
 
 旧版 hash 链接（`#/cet4/high`）会自动跳转到新地址。
+
+> 部署到 Cloudflare Pages 时 `SITE_ORIGIN` 设为该站点域名，生成的 canonical 与 sitemap 会指向它；仓库里的 `docs/` 默认仍按 GitHub Pages 的子路径构建。
 
 ## 目录结构
 
