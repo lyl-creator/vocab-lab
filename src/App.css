@@ -447,3 +447,26 @@ img,svg{max-width:100%}
 .seq-button:hover::after,.seq-button:focus-visible::after{opacity:1;transform:translateY(0)}
 .seq-button:hover::before,.seq-button:focus-visible::before{opacity:1}
 @media (hover:none){.seq-button::after,.seq-button::before{display:none}}
+
+
+/* 长列表性能：跳过视口外的行渲染 */
+.word-row{content-visibility:auto;contain-intrinsic-size:auto 78px}
+.list-sentinel{height:1px}
+.list-more{display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 0 4px;color:#8b9384;font-size:13px;border-top:1px solid #edf0e6}
+.list-more .subtle-button{padding:7px 14px;font-size:13px}
+
+
+/* 词库异步加载时的骨架 */
+.loading-table{padding:6px 0 0}
+.loading-row{display:flex;gap:18px;align-items:center;padding:20px 23px;border-top:1px solid #edf0e6}
+.loading-row>i{display:block;height:14px;border-radius:6px;background:linear-gradient(90deg,#eef1e6 25%,#f6f8ef 37%,#eef1e6 63%);background-size:400% 100%;animation:skeletonshift 1.4s ease infinite}
+.loading-row>i:nth-child(1){width:22%}
+.loading-row>i:nth-child(2){width:38%}
+.loading-row>i:nth-child(3){width:14%}
+@keyframes skeletonshift{0%{background-position:100% 50%}100%{background-position:0 50%}}
+.loading-hint{margin:14px 23px 18px;font-size:13px;color:#98a08f}
+
+.daily-loading{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px}
+.daily-loading>i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,#ecefdf 25%,#f6f8ef 37%,#ecefdf 63%);background-size:400% 100%;animation:skeletonshift 1.4s ease infinite}
+.daily-loading>i:first-child{width:96px}
+.daily-loading>i:last-child{width:78%}

@@ -83,8 +83,19 @@ function accountOf(session: any): SyncAccount | null {
   return { uid: user.id, email: user.email || localStorage.getItem('vocab-lab-sync-email') || '' }
 }
 
+// 只有本机存过会话才去加载 SDK：避免未登录用户每次打开都下载 150KB 的 supabase-js
+function hasStoredSession(): boolean {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) return true
+    }
+  } catch {}
+  return false
+}
+
 export async function currentAccount(): Promise<SyncAccount | null> {
-  if (!syncConfigured()) return null
+  if (!syncConfigured() || !hasStoredSession()) return null
   try {
     const client = await getClient()
     const { data } = await client.auth.getSession()
