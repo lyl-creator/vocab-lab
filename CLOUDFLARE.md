@@ -1,5 +1,10 @@
 # 托管到 Cloudflare Pages
 
+> **当前状态**：已部署到 Cloudflare Pages
+> - 生产地址：<https://vocab-lab-egf.pages.dev>
+> - 项目名：`vocab-lab`（账号 `98d06807…`）
+> - 构建方式：本地构建后 `wrangler pages deploy docs` 直传（项目尚未连接 Git，见下方「自动部署」）
+
 GitHub Pages 仍然可用（发布目录 `docs/`），但国内访问时常很慢。Cloudflare Pages 从源码构建，不需要把 `docs/` 提交上去，改完代码 push 即可自动发布。
 
 ## 方式一：连接 Git 仓库（推荐，之后自动部署）
@@ -16,6 +21,8 @@ GitHub Pages 仍然可用（发布目录 `docs/`），但国内访问时常很�
    | 环境变量 `SITE_ORIGIN` | `https://<你的项目名>.pages.dev` |
 
 3. 保存并部署。之后每次 push 到 `main` 都会自动重建。
+
+> 项目创建时已经通过 API 写入了 `NODE_VERSION=22` 与 `SITE_ORIGIN`，连接 Git 后不用再填。
 
 > `SITE_ORIGIN` 决定 canonical、`og:url` 和 `sitemap.xml` 里的域名。绑定自定义域名后，把它改成新域名再触发一次部署。
 

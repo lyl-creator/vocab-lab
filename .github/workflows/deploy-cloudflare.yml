@@ -25,7 +25,7 @@ jobs:
       - name: Build static site
         run: npm run build && node build-pages.mjs && node build-standalone.mjs
         env:
-          SITE_ORIGIN: ${{ vars.SITE_ORIGIN || 'https://vocab-lab.pages.dev' }}
+          SITE_ORIGIN: ${{ vars.SITE_ORIGIN || 'https://vocab-lab-egf.pages.dev' }}
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:

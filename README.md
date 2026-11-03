@@ -4,7 +4,7 @@
 
 一个纯前端的英语词汇练习应用：**课本词库 + 四级大纲 + 翻译词汇**三套词库，六种练习方式（含四级真题的选词填空与翻译），答完即时反馈、错词自动进生词本，可选用邮箱账号把记录同步到云端。
 
-**在线体验**：[lyl-creator.github.io/vocab-lab](https://lyl-creator.github.io/vocab-lab/)　·　**使用指南**：[/guide/](https://lyl-creator.github.io/vocab-lab/guide/)　·　**单文件版**：[vocab-lab.html](https://lyl-creator.github.io/vocab-lab/vocab-lab.html)（下载后双击即可离线使用）
+**在线体验**：[vocab-lab-egf.pages.dev](https://vocab-lab-egf.pages.dev/)（Cloudflare Pages）　·　[GitHub Pages 镜像](https://lyl-creator.github.io/vocab-lab/)　·　**使用指南**：[/guide/](https://vocab-lab-egf.pages.dev/guide/)　·　**单文件版**：[vocab-lab.html](https://vocab-lab-egf.pages.dev/vocab-lab.html)（下载后双击即可离线使用）
 
 ![桌面端首页](source/desktop.png)
 
