@@ -106,7 +106,7 @@ function pageHtml({ path, title, desc, depth, noindex, absolute }) {
     '<link rel="icon" type="image/svg+xml" href="' + prefix + 'favicon.svg" />',
     '<link rel="apple-touch-icon" href="' + prefix + 'apple-touch-icon.png" />',
     '<link rel="stylesheet" crossorigin href="' + prefix + 'assets/' + cssName + '" />',
-    ...(cet4Chunk && (path === '/' || path.startsWith('/cet4')) ? ['<link rel="modulepreload" crossorigin href="' + prefix + 'assets/' + cet4Chunk + '" />'] : []),
+    ...(cet4Chunk && path.startsWith('/cet4') ? ['<link rel="modulepreload" crossorigin href="' + prefix + 'assets/' + cet4Chunk + '" />'] : []),
     "<style>\nhtml,body{margin:0;background:#faf9f6}\n.boot{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:ui-sans-serif,system-ui,\"PingFang SC\",\"Microsoft YaHei\",sans-serif;color:#4f673b}\n.boot-mark{width:72px;height:72px;border-radius:20px;background:linear-gradient(180deg,#e8f2cd,#cfe1a7);display:grid;place-items:center;box-shadow:0 10px 30px rgba(79,103,59,.12)}\n.boot-mark svg{width:44px;height:44px}\n.boot-name{font-size:15px;letter-spacing:4px;color:#5b6a4c}\n.boot-bar{width:132px;height:4px;border-radius:999px;background:#e6ead9;overflow:hidden}\n.boot-bar i{display:block;width:40%;height:100%;border-radius:999px;background:#8eab50;animation:bootslide 1.1s ease-in-out infinite}\n@keyframes bootslide{0%{transform:translateX(-100%)}100%{transform:translateX(330%)}}\n@media (prefers-reduced-motion:reduce){.boot-bar i{animation:none;width:100%}}\n</style>",
     '</head>',
     '<body>',
