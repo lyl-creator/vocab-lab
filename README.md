@@ -103,7 +103,7 @@ npx serve docs
 | 路径 | 页面 |
 | --- | --- |
 | `/` | 学习概览 |
-| `/book/`、`/book/u1/episode-1/` | 课本文库 / 指定单元与栏目 |
+| `/book/`、`/book/u1/episode-1/` | 课本词库 / 指定单元与栏目 |
 | `/cet4/`、`/cet4/high/` | 四级词库 / 只考高频 |
 | `/translation/`、`/translation/中国历史/` | 翻译词汇 / 指定主题 |
 | `/<词库>/<练习方式>/` | 例如 `/cet4/cloze/`、`/book/spelling/`，打开即进入该练习的设置 |
