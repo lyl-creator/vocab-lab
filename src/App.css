@@ -442,11 +442,7 @@ img,svg{max-width:100%}
   .word-row>button:not(.seq-button){grid-column:5}
 }
 .seq-button{position:relative}
-.seq-button::after{content:attr(data-tip);position:absolute;left:-6px;bottom:calc(100% + 9px);transform:translateY(3px);background:#2f3a2b;color:#f4f7ea;font-size:12px;line-height:1;letter-spacing:.2px;padding:7px 9px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s ease,transform .12s ease;z-index:6;box-shadow:0 4px 14px rgba(47,58,43,.18)}
-.seq-button::before{content:'';position:absolute;left:10px;bottom:calc(100% + 1px);border:5px solid transparent;border-top-color:#2f3a2b;opacity:0;transition:opacity .12s ease;z-index:6;pointer-events:none}
-.seq-button:hover::after,.seq-button:focus-visible::after{opacity:1;transform:translateY(0)}
-.seq-button:hover::before,.seq-button:focus-visible::before{opacity:1}
-@media (hover:none){.seq-button::after,.seq-button::before{display:none}}
+
 
 
 /* 长列表性能：跳过视口外的行渲染 */
@@ -470,3 +466,6 @@ img,svg{max-width:100%}
 .daily-loading>i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,#ecefdf 25%,#f6f8ef 37%,#ecefdf 63%);background-size:400% 100%;animation:skeletonshift 1.4s ease infinite}
 .daily-loading>i:first-child{width:96px}
 .daily-loading>i:last-child{width:78%}
+
+.row-tip{position:fixed;transform:translate(-4px,-100%);background:#2f3a2b;color:#f4f7ea;font-size:12px;line-height:1;letter-spacing:.2px;padding:7px 9px;border-radius:6px;white-space:nowrap;z-index:80;pointer-events:none;box-shadow:0 4px 14px rgba(47,58,43,.18)}
+.row-tip::after{content:'';position:absolute;left:10px;top:100%;border:5px solid transparent;border-top-color:#2f3a2b}

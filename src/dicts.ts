@@ -37,7 +37,7 @@ export const dictWords = (id: DictId): Word[] => (id === 'book' ? vocabulary : i
 export const dictPassages = (id: DictId): Passage[] => (id === 'book' ? passages : [])
 export const dictMeta = (id: DictId) => DICTS.find(d => d.id === id) || DICTS[0]
 export const GROUPS = [...new Set(TRANSLATION_WORDS.map(e => e.group))]
-export const HIGH_COUNT = cet4Words.filter(w => w.starred).length
+export const highCount = (): number => cet4Words.reduce((n, w) => n + (w.starred ? 1 : 0), 0)
 export const wordIndex = new Map<string, Word>([...vocabulary, ...translationWords].map(w => [w.id, w]))
 
 export const isDictReady = (id: DictId): boolean => id !== 'cet4' || cet4Loaded
