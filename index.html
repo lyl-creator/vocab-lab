@@ -16,7 +16,9 @@
       .boot-bar{width:132px;height:4px;border-radius:999px;background:#e6ead9;overflow:hidden}
       .boot-bar i{display:block;width:40%;height:100%;border-radius:999px;background:#8eab50;animation:bootslide 1.1s ease-in-out infinite}
       @keyframes bootslide{0%{transform:translateX(-100%)}100%{transform:translateX(330%)}}
+      @keyframes hintin{to{opacity:1}}
       @media (prefers-reduced-motion:reduce){.boot-bar i{animation:none;width:100%}}
+    .boot-hint{font-size:12.5px;color:#93a084;letter-spacing:.5px;opacity:0;animation:hintin .3s ease 8s forwards}
     </style>
     <meta name="description" content="基于你的教材词库，以选择、拼写与配对测验了解词汇掌握度。" />
     <title>词汇实验室 · Vocab Lab</title>
@@ -29,6 +31,7 @@
         </div>
         <div class="boot-name">词汇实验室</div>
         <div class="boot-bar"><i></i></div>
+        <div class="boot-hint">网络较慢，正在继续加载…</div>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
